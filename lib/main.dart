@@ -1,7 +1,15 @@
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const IranaApp());
 }
 
@@ -20,12 +28,96 @@ class IranaApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: iranaBg,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: iranaPurple,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: iranaPurple),
         fontFamily: 'Roboto',
       ),
       home: const IranaHome(),
+    );
+  }
+}
+
+class IranaPost {
+  final String id;
+  final String username;
+  final String caption;
+  final String imagePath;
+  final DateTime date;
+  final bool liked;
+
+  IranaPost({
+    required this.id,
+    required this.username,
+    required this.caption,
+    required this.imagePath,
+    required this.date,
+    this.liked = false,
+  });
+
+  IranaPost copyWith({bool? liked}) {
+    return IranaPost(
+      id: id,
+      username: username,
+      caption: caption,
+      imagePath: imagePath,
+      date: date,
+      liked: liked ?? this.liked,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'username': username,
+    'caption': caption,
+    'imagePath': imagePath,
+    'date': date.toIso8601String(),
+    'liked': liked,
+  };
+
+  factory IranaPost.fromJson(Map<String, dynamic> json) {
+    return IranaPost(
+      id: json['id'],
+      username: json['username'],
+      caption: json['caption'],
+      imagePath: json['imagePath'],
+      date: DateTime.parse(json['date']),
+      liked: json['liked'] ?? false,
+    );
+  }
+}
+
+class IranaStory {
+  final String id;
+  final String username;
+  final String filePath;
+  final bool isVideo;
+  final DateTime createdAt;
+
+  IranaStory({
+    required this.id,
+    required this.username,
+    required this.filePath,
+    required this.isVideo,
+    required this.createdAt,
+  });
+
+  bool get expired =>
+      DateTime.now().difference(createdAt).inHours >= 24;
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'username': username,
+    'filePath': filePath,
+    'isVideo': isVideo,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory IranaStory.fromJson(Map<String, dynamic> json) {
+    return IranaStory(
+      id: json['id'],
+      username: json['username'],
+      filePath: json['filePath'],
+      isVideo: json['isVideo'] ?? false,
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 }
@@ -39,6 +131,12 @@ class IranaHome extends StatefulWidget {
 
 class _IranaHomeState extends State<IranaHome> {
   int selectedIndex = 0;
+  bool loading = true;
+
+  List<IranaPost> posts = [];
+  List<IranaStory> stories = [];
+
+  final ImagePicker picker = ImagePicker();
 
   final List<String> pages = [
     'خانه',
@@ -57,7 +155,189 @@ class _IranaHomeState extends State<IranaHome> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<Directory> get mediaDirectory async {
+    final directory = await getApplicationDocumentsDirectory();
+    final folder = Directory('${directory.path}/irana_media');
+
+    if (!await folder.exists()) {
+      await folder.create(recursive: true);
+    }
+
+    return folder;
+  }
+
+  Future<void> loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    try {
+      final postData = prefs.getString('irana_posts');
+      final storyData = prefs.getString('irana_stories');
+
+      if (postData != null) {
+        posts = (jsonDecode(postData) as List)
+            .map((e) => IranaPost.fromJson(e))
+            .where((p) => File(p.imagePath).existsSync())
+            .toList();
+      }
+
+      if (storyData != null) {
+        stories = (jsonDecode(storyData) as List)
+            .map((e) => IranaStory.fromJson(e))
+            .where((s) =>
+                !s.expired && File(s.filePath).existsSync())
+            .toList();
+      }
+    } catch (_) {
+      posts = [];
+      stories = [];
+    }
+
+    await saveData();
+
+    if (mounted) {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  Future<void> saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      'irana_posts',
+      jsonEncode(posts.map((e) => e.toJson()).toList()),
+    );
+
+    await prefs.setString(
+      'irana_stories',
+      jsonEncode(stories.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  Future<String> copyMedia(XFile file) async {
+    final folder = await mediaDirectory;
+    final extension = file.name.contains('.')
+        ? file.name.split('.').last
+        : 'jpg';
+
+    final destination =
+        '${folder.path}/${DateTime.now().microsecondsSinceEpoch}.$extension';
+
+    await File(file.path).copy(destination);
+    return destination;
+  }
+
+  Future<void> addStory() async {
+    try {
+      final file = await picker.pickMedia();
+
+      if (file == null) return;
+
+      final path = await copyMedia(file);
+
+      final isVideo = file.mimeType?.startsWith('video/') ??
+          file.name.toLowerCase().endsWith('.mp4') ||
+          file.name.toLowerCase().endsWith('.mov');
+
+      final story = IranaStory(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        username: 'irana_user',
+        filePath: path,
+        isVideo: isVideo,
+        createdAt: DateTime.now(),
+      );
+
+      setState(() {
+        stories.insert(0, story);
+      });
+
+      await saveData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('استوری منتشر شد 💜')),
+        );
+      }
+    } catch (e) {
+      showError('انتشار استوری انجام نشد');
+    }
+  }
+
+  Future<void> addPost(XFile file, String caption) async {
+    try {
+      final path = await copyMedia(file);
+
+      final post = IranaPost(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        username: 'irana_user',
+        caption: caption,
+        imagePath: path,
+        date: DateTime.now(),
+      );
+
+      setState(() {
+        posts.insert(0, post);
+        selectedIndex = 0;
+      });
+
+      await saveData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('پست با موفقیت منتشر شد 💜')),
+        );
+      }
+    } catch (e) {
+      showError('انتشار پست انجام نشد');
+    }
+  }
+
+  void showError(String message) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<void> toggleLike(String id) async {
+    setState(() {
+      posts = posts.map((post) {
+        if (post.id == id) {
+          return post.copyWith(liked: !post.liked);
+        }
+        return post;
+      }).toList();
+    });
+
+    await saveData();
+  }
+
+  void openStory(IranaStory story) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StoryViewer(story: story),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: iranaPurple),
+        ),
+      );
+    }
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -93,18 +373,24 @@ class _IranaHomeState extends State<IranaHome> {
         ),
         body: IndexedStack(
           index: selectedIndex,
-          children: const [
-            FeedPage(),
-            SearchPage(),
-            CreatePage(),
-            VideosPage(),
-            ProfilePage(),
+          children: [
+            FeedPage(
+              stories: stories,
+              posts: posts,
+              onAddStory: addStory,
+              onOpenStory: openStory,
+              onLike: toggleLike,
+            ),
+            SearchPage(posts: posts),
+            CreatePage(onPublish: addPost),
+            VideosPage(stories: stories),
+            ProfilePage(posts: posts),
           ],
         ),
         bottomNavigationBar: NavigationBar(
           backgroundColor: Colors.white,
           selectedIndex: selectedIndex,
-          indicatorColor: iranaPurple.withValues(alpha: 0.12),
+          indicatorColor: iranaPurple.withOpacity(0.12),
           onDestinationSelected: (index) {
             setState(() {
               selectedIndex = index;
@@ -128,7 +414,20 @@ class _IranaHomeState extends State<IranaHome> {
 }
 
 class FeedPage extends StatelessWidget {
-  const FeedPage({super.key});
+  final List<IranaStory> stories;
+  final List<IranaPost> posts;
+  final VoidCallback onAddStory;
+  final Function(IranaStory) onOpenStory;
+  final Function(String) onLike;
+
+  const FeedPage({
+    super.key,
+    required this.stories,
+    required this.posts,
+    required this.onAddStory,
+    required this.onOpenStory,
+    required this.onLike,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -151,34 +450,44 @@ class FeedPage extends StatelessWidget {
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            children: const [
-              StoryItem(name: 'استوری من', own: true),
-              StoryItem(name: 'آرمان'),
-              StoryItem(name: 'سارا'),
-              StoryItem(name: 'رضا'),
-              StoryItem(name: 'مریم'),
-              StoryItem(name: 'علی'),
+            children: [
+              GestureDetector(
+                onTap: onAddStory,
+                child: const StoryItem(
+                  name: 'استوری من',
+                  own: true,
+                ),
+              ),
+              ...stories.map(
+                (story) => GestureDetector(
+                  onTap: () => onOpenStory(story),
+                  child: StoryItem(
+                    name: story.username,
+                    filePath: story.filePath,
+                    isVideo: story.isVideo,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
         const Divider(height: 20),
-        const PostCard(
-          username: 'irana_official',
-          caption: 'به دنیای ایرانا خوش آمدید 💜',
-          symbol: Icons.public,
-          color: Color(0xFFE9DDF7),
-        ),
-        const PostCard(
-          username: 'irana_world',
-          caption: 'اینجا آغاز یک ارتباط تازه است 🌍',
-          symbol: Icons.landscape,
-          color: Color(0xFFDCEBE7),
-        ),
-        const PostCard(
-          username: 'iranian_people',
-          caption: 'با هم دنیای زیباتری می‌سازیم.',
-          symbol: Icons.people_alt,
-          color: Color(0xFFF6E2EB),
+        if (posts.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(35),
+            child: Center(
+              child: Text(
+                'هنوز پستی منتشر نشده است.\nاولین پست ایرانا را منتشر کن 💜',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ),
+        ...posts.map(
+          (post) => PostCard(
+            post: post,
+            onLike: () => onLike(post.id),
+          ),
         ),
       ],
     );
@@ -188,15 +497,21 @@ class FeedPage extends StatelessWidget {
 class StoryItem extends StatelessWidget {
   final String name;
   final bool own;
+  final String? filePath;
+  final bool isVideo;
 
   const StoryItem({
     super.key,
     required this.name,
     this.own = false,
+    this.filePath,
+    this.isVideo = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasFile = filePath != null && File(filePath!).existsSync();
+
     return Container(
       width: 76,
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -204,32 +519,44 @@ class StoryItem extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [iranaPink, iranaPurple],
               ),
             ),
             child: CircleAvatar(
               radius: 29,
               backgroundColor: Colors.white,
+              backgroundImage: hasFile && !isVideo
+                  ? FileImage(File(filePath!))
+                  : null,
               child: own
                   ? const Icon(
                       Icons.add,
                       color: iranaPurple,
                       size: 28,
                     )
-                  : const Icon(
-                      Icons.person,
-                      color: Colors.grey,
-                      size: 32,
-                    ),
+                  : isVideo
+                      ? const Icon(
+                          Icons.play_arrow,
+                          color: iranaPurple,
+                          size: 32,
+                        )
+                      : hasFile
+                          ? null
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
             ),
           ),
           const SizedBox(height: 5),
           Text(
             name,
             maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 12),
           ),
         ],
@@ -238,29 +565,120 @@ class StoryItem extends StatelessWidget {
   }
 }
 
-class PostCard extends StatefulWidget {
-  final String username;
-  final String caption;
-  final IconData symbol;
-  final Color color;
+class StoryViewer extends StatefulWidget {
+  final IranaStory story;
 
-  const PostCard({
-    super.key,
-    required this.username,
-    required this.caption,
-    required this.symbol,
-    required this.color,
-  });
+  const StoryViewer({super.key, required this.story});
 
   @override
-  State<PostCard> createState() => _PostCardState();
+  State<StoryViewer> createState() => _StoryViewerState();
 }
 
-class _PostCardState extends State<PostCard> {
-  bool liked = false;
+class _StoryViewerState extends State<StoryViewer> {
+  VideoPlayerController? controller;
+  Future<void>? initializeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.story.isVideo) {
+      controller = VideoPlayerController.file(
+        File(widget.story.filePath),
+      );
+
+      initializeFuture = controller!.initialize().then((_) {
+        controller!.setLooping(true);
+        controller!.play();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(widget.story.username),
+      ),
+      body: Center(
+        child: widget.story.isVideo
+            ? FutureBuilder<void>(
+                future: initializeFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const CircularProgressIndicator(
+                      color: Colors.white,
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Text(
+                      'پخش ویدئو امکان‌پذیر نیست',
+                      style: TextStyle(color: Colors.white),
+                    );
+                  }
+
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: controller!.value.aspectRatio,
+                        child: VideoPlayer(controller!),
+                      ),
+                      IconButton(
+                        color: Colors.white,
+                        iconSize: 40,
+                        onPressed: () {
+                          setState(() {
+                            if (controller!.value.isPlaying) {
+                              controller!.pause();
+                            } else {
+                              controller!.play();
+                            }
+                          });
+                        },
+                        icon: Icon(
+                          controller!.value.isPlaying
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              )
+            : Image.file(
+                File(widget.story.filePath),
+                fit: BoxFit.contain,
+              ),
+      ),
+    );
+  }
+}
+
+class PostCard extends StatelessWidget {
+  final IranaPost post;
+  final VoidCallback onLike;
+
+  const PostCard({
+    super.key,
+    required this.post,
+    required this.onLike,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final file = File(post.imagePath);
+
     return Card(
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 12),
@@ -275,7 +693,7 @@ class _PostCardState extends State<PostCard> {
               child: Icon(Icons.person, color: iranaPurple),
             ),
             title: Text(
-              widget.username,
+              post.username,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -283,16 +701,13 @@ class _PostCardState extends State<PostCard> {
             ),
             trailing: const Icon(Icons.more_vert),
           ),
-          Container(
-            height: 260,
-            width: double.infinity,
-            color: widget.color,
-            child: Icon(
-              widget.symbol,
-              size: 95,
-              color: iranaPurple.withValues(alpha: 0.65),
+          if (file.existsSync())
+            Image.file(
+              file,
+              width: double.infinity,
+              height: 300,
+              fit: BoxFit.cover,
             ),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -301,14 +716,12 @@ class _PostCardState extends State<PostCard> {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      liked = !liked;
-                    });
-                  },
+                  onPressed: onLike,
                   icon: Icon(
-                    liked ? Icons.favorite : Icons.favorite_border,
-                    color: liked ? Colors.red : Colors.black87,
+                    post.liked
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: post.liked ? Colors.red : Colors.black87,
                   ),
                 ),
                 IconButton(
@@ -333,7 +746,7 @@ class _PostCardState extends State<PostCard> {
               vertical: 4,
             ),
             child: Text(
-              widget.caption,
+              post.caption,
               style: const TextStyle(fontSize: 14),
             ),
           ),
@@ -344,16 +757,35 @@ class _PostCardState extends State<PostCard> {
   }
 }
 
-class SearchPage extends StatelessWidget {
-  const SearchPage({super.key});
+class SearchPage extends StatefulWidget {
+  final List<IranaPost> posts;
+
+  const SearchPage({super.key, required this.posts});
+
+  @override
+  State<SearchPage> createState() => _SearchPageState();
+}
+
+class _SearchPageState extends State<SearchPage> {
+  String query = '';
 
   @override
   Widget build(BuildContext context) {
+    final results = widget.posts.where((post) {
+      return post.username.toLowerCase().contains(query.toLowerCase()) ||
+          post.caption.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           TextField(
+            onChanged: (value) {
+              setState(() {
+                query = value;
+              });
+            },
             decoration: InputDecoration(
               hintText: 'جستجوی افراد و موضوعات...',
               prefixIcon: const Icon(Icons.search),
@@ -365,19 +797,29 @@ class SearchPage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 25),
-          const Icon(
-            Icons.travel_explore,
-            size: 75,
-            color: iranaPurple,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'جهان ایرانا را کشف کن',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          const SizedBox(height: 15),
+          Expanded(
+            child: query.isEmpty
+                ? const Center(
+                    child: Text('جهان ایرانا را کشف کن'),
+                  )
+                : results.isEmpty
+                    ? const Center(child: Text('نتیجه‌ای پیدا نشد'))
+                    : ListView(
+                        children: results.map((post) {
+                          return ListTile(
+                            leading: const CircleAvatar(
+                              child: Icon(Icons.person),
+                            ),
+                            title: Text(post.username),
+                            subtitle: Text(
+                              post.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                      ),
           ),
         ],
       ),
@@ -385,68 +827,212 @@ class SearchPage extends StatelessWidget {
   }
 }
 
-class CreatePage extends StatelessWidget {
-  const CreatePage({super.key});
+class CreatePage extends StatefulWidget {
+  final Future<void> Function(XFile, String) onPublish;
+
+  const CreatePage({super.key, required this.onPublish});
+
+  @override
+  State<CreatePage> createState() => _CreatePageState();
+}
+
+class _CreatePageState extends State<CreatePage> {
+  final ImagePicker picker = ImagePicker();
+  final TextEditingController captionController =
+      TextEditingController();
+
+  XFile? selectedImage;
+  bool publishing = false;
+
+  Future<void> chooseImage() async {
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 90,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImage = image;
+      });
+    }
+  }
+
+  Future<void> publish() async {
+    if (selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ابتدا یک عکس انتخاب کن')),
+      );
+      return;
+    }
+
+    setState(() {
+      publishing = true;
+    });
+
+    try {
+      await widget.onPublish(
+        selectedImage!,
+        captionController.text.trim(),
+      );
+
+      captionController.clear();
+
+      if (mounted) {
+        setState(() {
+          selectedImage = null;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          publishing = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    captionController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.add_circle_outline,
-            size: 90,
-            color: iranaPurple,
+    return ListView(
+      padding: const EdgeInsets.all(18),
+      children: [
+        const Text(
+          'ساخت پست جدید',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'ساخت پست جدید',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
+        ),
+        const SizedBox(height: 20),
+        GestureDetector(
+          onTap: chooseImage,
+          child: Container(
+            height: 260,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: iranaPurple.withOpacity(0.3)),
+            ),
+            child: selectedImage == null
+                ? const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 75,
+                        color: iranaPurple,
+                      ),
+                      SizedBox(height: 12),
+                      Text('انتخاب عکس از گالری'),
+                    ],
+                  )
+                : ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.file(
+                      File(selectedImage!.path),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        TextField(
+          controller: captionController,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: 'متن و کپشن پست خود را بنویس...',
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide.none,
             ),
           ),
-          const SizedBox(height: 12),
-          const Text('به‌زودی امکان انتشار عکس و ویدئو'),
-        ],
-      ),
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton.icon(
+          onPressed: publishing ? null : publish,
+          icon: const Icon(Icons.publish),
+          label: Text(
+            publishing ? 'در حال انتشار...' : 'انتشار پست',
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: iranaPurple,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.all(15),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class VideosPage extends StatelessWidget {
-  const VideosPage({super.key});
+  final List<IranaStory> stories;
+
+  const VideosPage({super.key, required this.stories});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.play_circle_outline,
-            size: 90,
-            color: iranaPurple,
-          ),
-          SizedBox(height: 16),
-          Text(
-            'ویدئوهای ایرانا',
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
+    final videos = stories.where((s) => s.isVideo).toList();
+
+    return videos.isEmpty
+        ? const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.play_circle_outline,
+                  size: 90,
+                  color: iranaPurple,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'ویدئوهای ایرانا',
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text('هنوز ویدئویی منتشر نشده است'),
+              ],
             ),
-          ),
-          SizedBox(height: 8),
-          Text('دنیایی از ویدئوها در راه است'),
-        ],
-      ),
-    );
+          )
+        : ListView(
+            children: videos.map((video) {
+              return ListTile(
+                leading: const Icon(
+                  Icons.play_circle_fill,
+                  color: iranaPurple,
+                  size: 40,
+                ),
+                title: Text(video.username),
+                subtitle: const Text('ویدئوی استوری'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StoryViewer(story: video),
+                    ),
+                  );
+                },
+              );
+            }).toList(),
+          );
   }
 }
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  final List<IranaPost> posts;
+
+  const ProfilePage({super.key, required this.posts});
 
   @override
   Widget build(BuildContext context) {
@@ -480,12 +1066,21 @@ class ProfilePage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 25),
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ProfileStat(number: '0', label: 'پست'),
-            ProfileStat(number: '0', label: 'دنبال‌کننده'),
-            ProfileStat(number: '0', label: 'دنبال‌شونده'),
+            ProfileStat(
+              number: posts.length.toString(),
+              label: 'پست',
+            ),
+            const ProfileStat(
+              number: '0',
+              label: 'دنبال‌کننده',
+            ),
+            const ProfileStat(
+              number: '0',
+              label: 'دنبال‌شونده',
+            ),
           ],
         ),
         const SizedBox(height: 25),
