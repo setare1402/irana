@@ -36,6 +36,8 @@ class IranaApp extends StatelessWidget {
   }
 }
 
+// ---------------- MODELS ----------------
+
 class IranaPost {
   final String id;
   final String username;
@@ -55,17 +57,15 @@ class IranaPost {
     this.isVideo = false,
   });
 
-  IranaPost copyWith({bool? liked}) {
-    return IranaPost(
-      id: id,
-      username: username,
-      caption: caption,
-      imagePath: imagePath,
-      date: date,
-      liked: liked ?? this.liked,
-      isVideo: isVideo,
-    );
-  }
+  IranaPost copyWith({bool? liked}) => IranaPost(
+        id: id,
+        username: username,
+        caption: caption,
+        imagePath: imagePath,
+        date: date,
+        liked: liked ?? this.liked,
+        isVideo: isVideo,
+      );
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -77,17 +77,15 @@ class IranaPost {
         'isVideo': isVideo,
       };
 
-  factory IranaPost.fromJson(Map<String, dynamic> json) {
-    return IranaPost(
-      id: json['id'],
-      username: json['username'],
-      caption: json['caption'] ?? '',
-      imagePath: json['imagePath'],
-      date: DateTime.parse(json['date']),
-      liked: json['liked'] ?? false,
-      isVideo: json['isVideo'] ?? false,
-    );
-  }
+  factory IranaPost.fromJson(Map<String, dynamic> j) => IranaPost(
+        id: j['id'],
+        username: j['username'],
+        caption: j['caption'] ?? '',
+        imagePath: j['imagePath'],
+        date: DateTime.parse(j['date']),
+        liked: j['liked'] ?? false,
+        isVideo: j['isVideo'] ?? false,
+      );
 }
 
 class IranaStory {
@@ -115,16 +113,80 @@ class IranaStory {
         'createdAt': createdAt.toIso8601String(),
       };
 
-  factory IranaStory.fromJson(Map<String, dynamic> json) {
-    return IranaStory(
-      id: json['id'],
-      username: json['username'],
-      filePath: json['filePath'],
-      isVideo: json['isVideo'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
-    );
-  }
+  factory IranaStory.fromJson(Map<String, dynamic> j) => IranaStory(
+        id: j['id'],
+        username: j['username'],
+        filePath: j['filePath'],
+        isVideo: j['isVideo'] ?? false,
+        createdAt: DateTime.parse(j['createdAt']),
+      );
 }
+
+class IranaComment {
+  final String id;
+  final String postId;
+  final String username;
+  final String text;
+  final DateTime date;
+  final String? parentId;
+
+  IranaComment({
+    required this.id,
+    required this.postId,
+    required this.username,
+    required this.text,
+    required this.date,
+    this.parentId,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'postId': postId,
+        'username': username,
+        'text': text,
+        'date': date.toIso8601String(),
+        'parentId': parentId,
+      };
+
+  factory IranaComment.fromJson(Map<String, dynamic> j) => IranaComment(
+        id: j['id'],
+        postId: j['postId'],
+        username: j['username'],
+        text: j['text'],
+        date: DateTime.parse(j['date']),
+        parentId: j['parentId'],
+      );
+}
+
+class IranaForward {
+  final String id;
+  final String postId;
+  final String receiver;
+  final DateTime date;
+
+  IranaForward({
+    required this.id,
+    required this.postId,
+    required this.receiver,
+    required this.date,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'postId': postId,
+        'receiver': receiver,
+        'date': date.toIso8601String(),
+      };
+
+  factory IranaForward.fromJson(Map<String, dynamic> j) => IranaForward(
+        id: j['id'],
+        postId: j['postId'],
+        receiver: j['receiver'],
+        date: DateTime.parse(j['date']),
+      );
+}
+
+// ---------------- HOME / DATA ----------------
 
 class IranaHome extends StatefulWidget {
   const IranaHome({super.key});
@@ -136,8 +198,12 @@ class IranaHome extends StatefulWidget {
 class _IranaHomeState extends State<IranaHome> {
   int selectedIndex = 0;
   bool loading = true;
+
   List<IranaPost> posts = [];
   List<IranaStory> stories = [];
+  List<IranaComment> comments = [];
+  List<IranaForward> forwards = [];
+  List<String> savedPostIds = [];
 
   final ImagePicker picker = ImagePicker();
 
@@ -164,8 +230,8 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<Directory> get mediaDirectory async {
-    final directory = await getApplicationDocumentsDirectory();
-    final folder = Directory('${directory.path}/irana_media');
+    final d = await getApplicationDocumentsDirectory();
+    final folder = Directory('${d.path}/irana_media');
     if (!await folder.exists()) {
       await folder.create(recursive: true);
     }
@@ -176,46 +242,63 @@ class _IranaHomeState extends State<IranaHome> {
     final prefs = await SharedPreferences.getInstance();
 
     try {
-      final postData = prefs.getString('irana_posts');
-      final storyData = prefs.getString('irana_stories');
+      final p = prefs.getString('irana_posts');
+      final s = prefs.getString('irana_stories');
+      final c = prefs.getString('irana_comments');
+      final f = prefs.getString('irana_forwards');
 
-      if (postData != null) {
-        posts = (jsonDecode(postData) as List)
+      if (p != null) {
+        posts = (jsonDecode(p) as List)
             .map((e) => IranaPost.fromJson(e))
-            .where((p) => File(p.imagePath).existsSync())
+            .where((e) => File(e.imagePath).existsSync())
             .toList();
       }
 
-      if (storyData != null) {
-        stories = (jsonDecode(storyData) as List)
+      if (s != null) {
+        stories = (jsonDecode(s) as List)
             .map((e) => IranaStory.fromJson(e))
-            .where((s) => !s.expired && File(s.filePath).existsSync())
+            .where((e) => !e.expired && File(e.filePath).existsSync())
             .toList();
       }
-    } catch (_) {
-      posts = [];
-      stories = [];
-    }
+
+      if (c != null) {
+        comments = (jsonDecode(c) as List)
+            .map((e) => IranaComment.fromJson(e))
+            .toList();
+      }
+
+      if (f != null) {
+        forwards = (jsonDecode(f) as List)
+            .map((e) => IranaForward.fromJson(e))
+            .toList();
+      }
+
+      savedPostIds = prefs.getStringList('irana_saved_posts') ?? [];
+    } catch (_) {}
 
     await saveData();
-
-    if (mounted) {
-      setState(() => loading = false);
-    }
+    if (mounted) setState(() => loading = false);
   }
 
   Future<void> saveData() async {
     final prefs = await SharedPreferences.getInstance();
-
     await prefs.setString(
       'irana_posts',
       jsonEncode(posts.map((e) => e.toJson()).toList()),
     );
-
     await prefs.setString(
       'irana_stories',
       jsonEncode(stories.map((e) => e.toJson()).toList()),
     );
+    await prefs.setString(
+      'irana_comments',
+      jsonEncode(comments.map((e) => e.toJson()).toList()),
+    );
+    await prefs.setString(
+      'irana_forwards',
+      jsonEncode(forwards.map((e) => e.toJson()).toList()),
+    );
+    await prefs.setStringList('irana_saved_posts', savedPostIds);
   }
 
   Future<String> copyMedia(XFile file) async {
@@ -231,14 +314,12 @@ class _IranaHomeState extends State<IranaHome> {
   bool isVideoFile(XFile file) {
     final mime = file.mimeType ?? '';
     final name = file.name.toLowerCase();
-
     return mime.startsWith('video/') ||
         name.endsWith('.mp4') ||
         name.endsWith('.mov') ||
         name.endsWith('.m4v');
   }
 
-  // صفحه جدید ساخت استوری
   Future<void> addStory() async {
     await Navigator.push(
       context,
@@ -246,21 +327,18 @@ class _IranaHomeState extends State<IranaHome> {
         builder: (_) => StoryCreatePage(
           onPublish: (file, video) async {
             final path = await copyMedia(file);
-
-            final story = IranaStory(
-              id: DateTime.now().microsecondsSinceEpoch.toString(),
-              username: 'irana_user',
-              filePath: path,
-              isVideo: video,
-              createdAt: DateTime.now(),
-            );
-
-            if (!mounted) return;
-
             setState(() {
-              stories.insert(0, story);
+              stories.insert(
+                0,
+                IranaStory(
+                  id: DateTime.now().microsecondsSinceEpoch.toString(),
+                  username: 'irana_user',
+                  filePath: path,
+                  isVideo: video,
+                  createdAt: DateTime.now(),
+                ),
+              );
             });
-
             await saveData();
           },
         ),
@@ -271,7 +349,6 @@ class _IranaHomeState extends State<IranaHome> {
   Future<void> addPost(XFile file, String caption, bool video) async {
     try {
       final path = await copyMedia(file);
-
       final post = IranaPost(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         username: 'irana_user',
@@ -287,18 +364,17 @@ class _IranaHomeState extends State<IranaHome> {
       });
 
       await saveData();
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('پست با موفقیت منتشر شد 💜')),
         );
       }
     } catch (_) {
-      showError('انتشار پست انجام نشد');
+      showMessage('انتشار پست انجام نشد');
     }
   }
 
-  void showError(String message) {
+  void showMessage(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -307,20 +383,45 @@ class _IranaHomeState extends State<IranaHome> {
 
   Future<void> toggleLike(String id) async {
     setState(() {
-      posts = posts.map((post) {
-        if (post.id == id) {
-          return post.copyWith(liked: !post.liked);
-        }
-        return post;
+      posts = posts.map((p) {
+        return p.id == id ? p.copyWith(liked: !p.liked) : p;
       }).toList();
     });
     await saveData();
+  }
+
+  Future<void> toggleSave(String id) async {
+    setState(() {
+      if (savedPostIds.contains(id)) {
+        savedPostIds.remove(id);
+      } else {
+        savedPostIds.add(id);
+      }
+    });
+    await saveData();
+    showMessage(
+      savedPostIds.contains(id)
+          ? 'پست ذخیره شد'
+          : 'پست از ذخیره‌شده‌ها حذف شد',
+    );
   }
 
   void openStory(IranaStory story) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => StoryViewer(story: story)),
+    );
+  }
+
+  void openImage(IranaPost post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MediaImageViewer(
+          path: post.imagePath,
+          title: post.username,
+        ),
+      ),
     );
   }
 
@@ -334,6 +435,189 @@ class _IranaHomeState extends State<IranaHome> {
         ),
       ),
     );
+  }
+
+  Future<void> openComments(IranaPost post) async {
+    final controller = TextEditingController();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (sheetContext) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: StatefulBuilder(
+            builder: (context, refresh) {
+              final postComments =
+                  comments.where((c) => c.postId == post.id).toList();
+
+              void sendComment({String? parentId}) {
+                final text = controller.text.trim();
+                if (text.isEmpty) return;
+
+                setState(() {
+                  comments.add(
+                    IranaComment(
+                      id: DateTime.now().microsecondsSinceEpoch.toString(),
+                      postId: post.id,
+                      username: 'irana_user',
+                      text: text,
+                      date: DateTime.now(),
+                      parentId: parentId,
+                    ),
+                  );
+                });
+
+                controller.clear();
+                saveData();
+                refresh(() {});
+              }
+
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.72,
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                          'نظرات پست',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: postComments.isEmpty
+                            ? const Center(
+                                child: Text('هنوز نظری ثبت نشده است'),
+                              )
+                            : ListView.builder(
+                                itemCount: postComments.length,
+                                itemBuilder: (context, index) {
+                                  final comment = postComments[index];
+                                  return ListTile(
+                                    leading: const CircleAvatar(
+                                      child: Icon(Icons.person),
+                                    ),
+                                    title: Text(comment.username),
+                                    subtitle: Text(comment.text),
+                                    trailing: IconButton(
+                                      tooltip: 'پاسخ',
+                                      icon: const Icon(Icons.reply),
+                                      onPressed: () {
+                                        controller.text =
+                                            '@${comment.username} ';
+                                        FocusScope.of(context).unfocus();
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                      const Divider(height: 1),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: controller,
+                                textInputAction: TextInputAction.send,
+                                onSubmitted: (_) => sendComment(),
+                                decoration: InputDecoration(
+                                  hintText: 'نظر خود را بنویس...',
+                                  filled: true,
+                                  fillColor: iranaBg,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => sendComment(),
+                              icon: const Icon(
+                                Icons.send,
+                                color: iranaPurple,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+
+    controller.dispose();
+  }
+
+  Future<void> forwardPost(IranaPost post) async {
+    final receiverController = TextEditingController();
+
+    final receiver = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('فوروارد پست'),
+          content: TextField(
+            controller: receiverController,
+            decoration: const InputDecoration(
+              labelText: 'نام کاربری گیرنده',
+              hintText: 'مثلاً user123',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final name = receiverController.text.trim();
+                if (name.isNotEmpty) {
+                  Navigator.pop(dialogContext, name);
+                }
+              },
+              child: const Text('ارسال'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    receiverController.dispose();
+
+    if (receiver == null || receiver.isEmpty) return;
+
+    setState(() {
+      forwards.add(
+        IranaForward(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          postId: post.id,
+          receiver: receiver,
+          date: DateTime.now(),
+        ),
+      );
+    });
+
+    await saveData();
+    showMessage('فوروارد در فهرست محلی ثبت شد');
   }
 
   @override
@@ -363,11 +647,11 @@ class _IranaHomeState extends State<IranaHome> {
           ),
           actions: [
             IconButton(
-              onPressed: () {},
+              onPressed: () => showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
               icon: const Icon(Icons.favorite_border, color: Colors.black87),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () => showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
               icon: const Icon(Icons.send_outlined, color: Colors.black87),
             ),
             const SizedBox(width: 5),
@@ -379,10 +663,15 @@ class _IranaHomeState extends State<IranaHome> {
             FeedPage(
               stories: stories,
               posts: posts,
+              savedPostIds: savedPostIds,
               onAddStory: addStory,
               onOpenStory: openStory,
               onLike: toggleLike,
               onOpenVideo: openVideo,
+              onOpenImage: openImage,
+              onComments: openComments,
+              onForward: forwardPost,
+              onSave: toggleSave,
             ),
             SearchPage(posts: posts),
             CreatePage(onPublish: addPost),
@@ -416,22 +705,34 @@ class _IranaHomeState extends State<IranaHome> {
   }
 }
 
+// ---------------- FEED ----------------
+
 class FeedPage extends StatelessWidget {
   final List<IranaStory> stories;
   final List<IranaPost> posts;
+  final List<String> savedPostIds;
   final VoidCallback onAddStory;
   final Function(IranaStory) onOpenStory;
   final Function(String) onLike;
   final Function(IranaPost) onOpenVideo;
+  final Function(IranaPost) onOpenImage;
+  final Function(IranaPost) onComments;
+  final Function(IranaPost) onForward;
+  final Function(String) onSave;
 
   const FeedPage({
     super.key,
     required this.stories,
     required this.posts,
+    required this.savedPostIds,
     required this.onAddStory,
     required this.onOpenStory,
     required this.onLike,
     required this.onOpenVideo,
+    required this.onOpenImage,
+    required this.onComments,
+    required this.onForward,
+    required this.onSave,
   });
 
   @override
@@ -485,8 +786,13 @@ class FeedPage extends StatelessWidget {
         ...posts.map(
           (post) => PostCard(
             post: post,
+            isSaved: savedPostIds.contains(post.id),
             onLike: () => onLike(post.id),
             onOpenVideo: () => onOpenVideo(post),
+            onOpenImage: () => onOpenImage(post),
+            onComments: () => onComments(post),
+            onForward: () => onForward(post),
+            onSave: () => onSave(post.id),
           ),
         ),
       ],
@@ -554,6 +860,187 @@ class StoryItem extends StatelessWidget {
   }
 }
 
+// ---------------- IMAGE VIEWER ----------------
+
+class MediaImageViewer extends StatelessWidget {
+  final String path;
+  final String title;
+
+  const MediaImageViewer({
+    super.key,
+    required this.path,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(title),
+      ),
+      body: Center(
+        child: File(path).existsSync()
+            ? InteractiveViewer(
+                minScale: 0.7,
+                maxScale: 5,
+                child: Image.file(
+                  File(path),
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.broken_image,
+                    color: Colors.white,
+                    size: 70,
+                  ),
+                ),
+              )
+            : const Text(
+                'تصویر پیدا نشد',
+                style: TextStyle(color: Colors.white),
+              ),
+      ),
+    );
+  }
+}
+
+// ---------------- VIDEO VIEWER ----------------
+
+class MediaVideoViewer extends StatefulWidget {
+  final String path;
+  final String title;
+
+  const MediaVideoViewer({
+    super.key,
+    required this.path,
+    required this.title,
+  });
+
+  @override
+  State<MediaVideoViewer> createState() => _MediaVideoViewerState();
+}
+
+class _MediaVideoViewerState extends State<MediaVideoViewer> {
+  late final VideoPlayerController controller;
+  late final Future<void> initializeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = VideoPlayerController.file(File(widget.path));
+    initializeFuture = controller.initialize().then((_) {
+      controller.setLooping(false);
+      controller.play();
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  String timeText(Duration duration) {
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: FutureBuilder<void>(
+          future: initializeFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const CircularProgressIndicator(color: Colors.white);
+            }
+            if (snapshot.hasError) {
+              return const Text(
+                'پخش ویدئو امکان‌پذیر نیست',
+                style: TextStyle(color: Colors.white),
+              );
+            }
+
+            return ValueListenableBuilder<VideoPlayerValue>(
+              valueListenable: controller,
+              builder: (context, value, child) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: value.aspectRatio == 0
+                          ? 16 / 9
+                          : value.aspectRatio,
+                      child: VideoPlayer(controller),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      child: VideoProgressIndicator(
+                        controller,
+                        allowScrubbing: true,
+                        colors: const VideoProgressColors(
+                          playedColor: iranaPink,
+                          bufferedColor: Colors.white38,
+                          backgroundColor: Colors.white24,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          timeText(value.position),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          color: Colors.white,
+                          iconSize: 48,
+                          onPressed: () {
+                            if (value.isPlaying) {
+                              controller.pause();
+                            } else {
+                              if (value.duration > Duration.zero &&
+                                  value.position >= value.duration) {
+                                controller.seekTo(Duration.zero);
+                              }
+                              controller.play();
+                            }
+                          },
+                          icon: Icon(
+                            value.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          timeText(value.duration),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- STORY VIEWER ----------------
+
 class StoryViewer extends StatefulWidget {
   final IranaStory story;
   const StoryViewer({super.key, required this.story});
@@ -609,141 +1096,69 @@ class _StoryViewerState extends State<StoryViewer> {
                       style: TextStyle(color: Colors.white),
                     );
                   }
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AspectRatio(
-                        aspectRatio: controller!.value.aspectRatio,
-                        child: VideoPlayer(controller!),
-                      ),
-                      IconButton(
-                        color: Colors.white,
-                        iconSize: 40,
-                        onPressed: () {
-                          setState(() {
-                            if (controller!.value.isPlaying) {
-                              controller!.pause();
-                            } else {
-                              controller!.play();
-                            }
-                          });
-                        },
-                        icon: Icon(
-                          controller!.value.isPlaying
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                        ),
-                      ),
-                    ],
+                  return ValueListenableBuilder<VideoPlayerValue>(
+                    valueListenable: controller!,
+                    builder: (context, value, child) {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AspectRatio(
+                            aspectRatio: value.aspectRatio,
+                            child: VideoPlayer(controller!),
+                          ),
+                          VideoProgressIndicator(
+                            controller!,
+                            allowScrubbing: true,
+                          ),
+                          IconButton(
+                            color: Colors.white,
+                            iconSize: 45,
+                            onPressed: () {
+                              value.isPlaying
+                                  ? controller!.pause()
+                                  : controller!.play();
+                            },
+                            icon: Icon(
+                              value.isPlaying ? Icons.pause : Icons.play_arrow,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               )
-            : Image.file(File(widget.story.filePath), fit: BoxFit.contain),
+            : Image.file(
+                File(widget.story.filePath),
+                fit: BoxFit.contain,
+              ),
       ),
     );
   }
 }
 
-class MediaVideoViewer extends StatefulWidget {
-  final String path;
-  final String title;
-
-  const MediaVideoViewer({
-    super.key,
-    required this.path,
-    required this.title,
-  });
-
-  @override
-  State<MediaVideoViewer> createState() => _MediaVideoViewerState();
-}
-
-class _MediaVideoViewerState extends State<MediaVideoViewer> {
-  late final VideoPlayerController controller;
-  late final Future<void> initializeFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = VideoPlayerController.file(File(widget.path));
-    initializeFuture = controller.initialize().then((_) {
-      controller.setLooping(true);
-      controller.play();
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: FutureBuilder<void>(
-          future: initializeFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator(color: Colors.white);
-            }
-            if (snapshot.hasError) {
-              return const Text(
-                'پخش ویدئو امکان‌پذیر نیست',
-                style: TextStyle(color: Colors.white),
-              );
-            }
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: VideoPlayer(controller),
-                ),
-                IconButton(
-                  color: Colors.white,
-                  iconSize: 45,
-                  onPressed: () {
-                    setState(() {
-                      if (controller.value.isPlaying) {
-                        controller.pause();
-                      } else {
-                        controller.play();
-                      }
-                    });
-                  },
-                  icon: Icon(
-                    controller.value.isPlaying
-                        ? Icons.pause
-                        : Icons.play_arrow,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
+// ---------------- POST CARD ----------------
 
 class PostCard extends StatelessWidget {
   final IranaPost post;
+  final bool isSaved;
   final VoidCallback onLike;
   final VoidCallback onOpenVideo;
+  final VoidCallback onOpenImage;
+  final VoidCallback onComments;
+  final VoidCallback onForward;
+  final VoidCallback onSave;
 
   const PostCard({
     super.key,
     required this.post,
+    required this.isSaved,
     required this.onLike,
     required this.onOpenVideo,
+    required this.onOpenImage,
+    required this.onComments,
+    required this.onForward,
+    required this.onSave,
   });
 
   @override
@@ -773,10 +1188,10 @@ class PostCard extends StatelessWidget {
             trailing: const Icon(Icons.more_vert),
           ),
           if (file.existsSync())
-            post.isVideo
-                ? GestureDetector(
-                    onTap: onOpenVideo,
-                    child: Container(
+            GestureDetector(
+              onTap: post.isVideo ? onOpenVideo : onOpenImage,
+              child: post.isVideo
+                  ? Container(
                       width: double.infinity,
                       height: 300,
                       color: Colors.black,
@@ -787,14 +1202,18 @@ class PostCard extends StatelessWidget {
                           size: 75,
                         ),
                       ),
+                    )
+                  : Image.file(
+                      file,
+                      width: double.infinity,
+                      height: 300,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const SizedBox(
+                        height: 200,
+                        child: Center(child: Icon(Icons.broken_image)),
+                      ),
                     ),
-                  )
-                : Image.file(
-                    file,
-                    width: double.infinity,
-                    height: 300,
-                    fit: BoxFit.cover,
-                  ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -807,17 +1226,20 @@ class PostCard extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: onComments,
                   icon: const Icon(Icons.mode_comment_outlined),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: onForward,
                   icon: const Icon(Icons.send_outlined),
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.bookmark_border),
+                  onPressed: onSave,
+                  icon: Icon(
+                    isSaved ? Icons.bookmark : Icons.bookmark_border,
+                    color: isSaved ? iranaPurple : Colors.black87,
+                  ),
                 ),
               ],
             ),
@@ -832,6 +1254,8 @@ class PostCard extends StatelessWidget {
     );
   }
 }
+
+// ---------------- SEARCH ----------------
 
 class SearchPage extends StatefulWidget {
   final List<IranaPost> posts;
@@ -895,6 +1319,8 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 }
+
+// ---------------- CREATE POST ----------------
 
 class CreatePage extends StatefulWidget {
   final Future<void> Function(XFile, String, bool) onPublish;
@@ -1050,6 +1476,8 @@ class _CreatePageState extends State<CreatePage> {
     );
   }
 }
+
+// ---------------- VIDEOS ----------------
 
 class VideosPage extends StatelessWidget {
   final List<IranaStory> stories;
@@ -1724,7 +2152,7 @@ class ProfileStat extends StatelessWidget {
   }
 }
 
-// ---------------- IRANA SETTINGS MENU ----------------
+// ---------------- SETTINGS MENU ----------------
 
 class IranaMenuItem {
   final String title;
@@ -1742,171 +2170,39 @@ class IranaSettingsPage extends StatelessWidget {
   const IranaSettingsPage({super.key});
 
   static const List<IranaMenuItem> menuItems = [
-    IranaMenuItem(
-      title: 'پست کردن هم‌زمان',
-      icon: Icons.dashboard_customize_outlined,
-      description: 'مدیریت انتشار هم‌زمان محتوا در بخش‌های مختلف ایرانا',
-    ),
-    IranaMenuItem(
-      title: 'مسدودشده‌ها',
-      icon: Icons.block,
-      description: 'فهرست حساب‌هایی که مسدود کرده‌اید',
-    ),
-    IranaMenuItem(
-      title: 'پنهان کردن داستان و پخش زنده',
-      icon: Icons.notifications_off_outlined,
-      description: 'مدیریت افرادی که نمی‌خواهید داستان یا پخش زنده‌شان را ببینید',
-    ),
-    IranaMenuItem(
-      title: 'فعالیت در فهرست دوستان',
-      icon: Icons.people_outline,
-      description: 'تنظیم نمایش فعالیت شما برای دوستان',
-    ),
-    IranaMenuItem(
-      title: 'پیام‌ها و پاسخ‌ها به داستان',
-      icon: Icons.send_outlined,
-      description: 'تنظیم پیام‌ها و پاسخ‌های دریافتی',
-    ),
-    IranaMenuItem(
-      title: 'نشان‌ها و ذکر نام‌ها',
-      icon: Icons.alternate_email,
-      description: 'مدیریت اشاره‌ها و برچسب‌گذاری حساب شما',
-    ),
-    IranaMenuItem(
-      title: 'نظرات',
-      icon: Icons.chat_bubble_outline,
-      description: 'مدیریت نظرات و پاسخ‌ها',
-    ),
-    IranaMenuItem(
-      title: 'اشتراک‌گذاری',
-      icon: Icons.repeat,
-      description: 'تنظیم نحوه اشتراک‌گذاری محتوا',
-    ),
-    IranaMenuItem(
-      title: 'محدودشده‌ها',
-      icon: Icons.person_off_outlined,
-      description: 'مدیریت حساب‌های محدودشده',
-    ),
-    IranaMenuItem(
-      title: 'محدود کردن تعاملات',
-      icon: Icons.report_gmailerrorred_outlined,
-      description: 'کنترل تعاملات و ارتباطات ناخواسته',
-    ),
-    IranaMenuItem(
-      title: 'کلمات پنهان‌شده',
-      icon: Icons.text_fields,
-      description: 'مدیریت کلمات و عبارت‌های پنهان‌شده',
-    ),
-    IranaMenuItem(
-      title: 'دنبال کردن و دعوت از دوستان',
-      icon: Icons.person_add_alt_1,
-      description: 'دعوت دوستان برای پیوستن به ایرانا',
-    ),
-    IranaMenuItem(
-      title: 'موارد دلخواه',
-      icon: Icons.star_border,
-      description: 'دسترسی به محتواهای مورد علاقه شما',
-    ),
-    IranaMenuItem(
-      title: 'حساب‌های بی‌صداشده',
-      icon: Icons.volume_off_outlined,
-      description: 'مدیریت حساب‌هایی که بی‌صدا کرده‌اید',
-    ),
-    IranaMenuItem(
-      title: 'اولویت‌های محتوا',
-      icon: Icons.tune,
-      description: 'تنظیم محتواهایی که بیشتر به شما نمایش داده می‌شوند',
-    ),
-    IranaMenuItem(
-      title: 'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها',
-      icon: Icons.favorite_border,
-      description: 'تنظیم نمایش آمار پسندیدن و اشتراک‌گذاری',
-    ),
-    IranaMenuItem(
-      title: 'حساب Meta',
-      icon: Icons.all_inclusive,
-      description: 'تنظیمات حساب و خدمات مرتبط با Meta در آینده',
-    ),
-    IranaMenuItem(
-      title: 'ذخیره‌شده',
-      icon: Icons.bookmark_border,
-      description: 'محتواهایی که ذخیره کرده‌اید',
-    ),
-    IranaMenuItem(
-      title: 'بایگانی',
-      icon: Icons.history,
-      description: 'مشاهده محتواهای بایگانی‌شده',
-    ),
-    IranaMenuItem(
-      title: 'فعالیت شما',
-      icon: Icons.monitor_heart_outlined,
-      description: 'بررسی فعالیت‌های انجام‌شده در ایرانا',
-    ),
-    IranaMenuItem(
-      title: 'اعلان‌ها',
-      icon: Icons.notifications_none,
-      description: 'مدیریت اعلان‌ها و هشدارهای ایرانا',
-    ),
-    IranaMenuItem(
-      title: 'مدیریت زمان',
-      icon: Icons.access_time,
-      description: 'مدیریت مدت‌زمان استفاده از ایرانا',
-    ),
-    IranaMenuItem(
-      title: 'Instagram ویژه رایانه لوحی',
-      icon: Icons.tablet_android_outlined,
-      description: 'اطلاعات مربوط به نمایش در دستگاه‌های مختلف',
-    ),
-    IranaMenuItem(
-      title: 'Meta Verified',
-      icon: Icons.verified_outlined,
-      description: 'اطلاعات مربوط به تأیید حساب',
-    ),
-    IranaMenuItem(
-      title: 'حریم خصوصی حساب',
-      icon: Icons.lock_outline,
-      description: 'مدیریت خصوصی یا عمومی بودن حساب',
-    ),
-    IranaMenuItem(
-      title: 'دوستان صمیمی',
-      icon: Icons.stars_outlined,
-      description: 'مدیریت فهرست دوستان صمیمی',
-    ),
-    IranaMenuItem(
-      title: 'مجوزهای دستگاه',
-      icon: Icons.phone_android,
-      description: 'دسترسی‌های برنامه به امکانات دستگاه',
-    ),
-    IranaMenuItem(
-      title: 'بایگانی کردن و دانلود کردن',
-      icon: Icons.download_outlined,
-      description: 'مدیریت بایگانی و دریافت اطلاعات',
-    ),
-    IranaMenuItem(
-      title: 'دسترس‌پذیری',
-      icon: Icons.accessibility_new,
-      description: 'تنظیم امکانات دسترس‌پذیری',
-    ),
-    IranaMenuItem(
-      title: 'زبان و ترجمه‌ها',
-      icon: Icons.translate,
-      description: 'تنظیم زبان برنامه و ترجمه محتوا',
-    ),
-    IranaMenuItem(
-      title: 'مصرف داده و کیفیت رسانه',
-      icon: Icons.signal_cellular_alt,
-      description: 'تنظیم مصرف اینترنت و کیفیت عکس و ویدئو',
-    ),
-    IranaMenuItem(
-      title: 'مجوزهای وب‌سایت',
-      icon: Icons.devices,
-      description: 'مدیریت دسترسی‌های وب‌سایت',
-    ),
-    IranaMenuItem(
-      title: 'نظرات در «حساب‌های نه‌چندان...»',
-      icon: Icons.home_outlined,
-      description: 'تنظیمات مربوط به تعاملات و نمایش محتوا',
-    ),
+    IranaMenuItem(title: 'پست کردن هم‌زمان', icon: Icons.dashboard_customize_outlined, description: 'مدیریت انتشار هم‌زمان محتوا در بخش‌های مختلف ایرانا'),
+    IranaMenuItem(title: 'مسدودشده‌ها', icon: Icons.block, description: 'فهرست حساب‌هایی که مسدود کرده‌اید'),
+    IranaMenuItem(title: 'پنهان کردن داستان و پخش زنده', icon: Icons.notifications_off_outlined, description: 'مدیریت افرادی که نمی‌خواهید داستان یا پخش زنده‌شان را ببینید'),
+    IranaMenuItem(title: 'فعالیت در فهرست دوستان', icon: Icons.people_outline, description: 'تنظیم نمایش فعالیت شما برای دوستان'),
+    IranaMenuItem(title: 'پیام‌ها و پاسخ‌ها به داستان', icon: Icons.send_outlined, description: 'تنظیم پیام‌ها و پاسخ‌های دریافتی'),
+    IranaMenuItem(title: 'نشان‌ها و ذکر نام‌ها', icon: Icons.alternate_email, description: 'مدیریت اشاره‌ها و برچسب‌گذاری حساب شما'),
+    IranaMenuItem(title: 'نظرات', icon: Icons.chat_bubble_outline, description: 'مدیریت نظرات و پاسخ‌ها'),
+    IranaMenuItem(title: 'اشتراک‌گذاری', icon: Icons.repeat, description: 'تنظیم نحوه اشتراک‌گذاری محتوا'),
+    IranaMenuItem(title: 'محدودشده‌ها', icon: Icons.person_off_outlined, description: 'مدیریت حساب‌های محدودشده'),
+    IranaMenuItem(title: 'محدود کردن تعاملات', icon: Icons.report_gmailerrorred_outlined, description: 'کنترل تعاملات و ارتباطات ناخواسته'),
+    IranaMenuItem(title: 'کلمات پنهان‌شده', icon: Icons.text_fields, description: 'مدیریت کلمات و عبارت‌های پنهان‌شده'),
+    IranaMenuItem(title: 'دنبال کردن و دعوت از دوستان', icon: Icons.person_add_alt_1, description: 'دعوت دوستان برای پیوستن به ایرانا'),
+    IranaMenuItem(title: 'موارد دلخواه', icon: Icons.star_border, description: 'دسترسی به محتواهای مورد علاقه شما'),
+    IranaMenuItem(title: 'حساب‌های بی‌صداشده', icon: Icons.volume_off_outlined, description: 'مدیریت حساب‌هایی که بی‌صدا کرده‌اید'),
+    IranaMenuItem(title: 'اولویت‌های محتوا', icon: Icons.tune, description: 'تنظیم محتواهایی که بیشتر به شما نمایش داده می‌شوند'),
+    IranaMenuItem(title: 'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها', icon: Icons.favorite_border, description: 'تنظیم نمایش آمار پسندیدن و اشتراک‌گذاری'),
+    IranaMenuItem(title: 'حساب Meta', icon: Icons.all_inclusive, description: 'تنظیمات حساب و خدمات مرتبط با Meta در آینده'),
+    IranaMenuItem(title: 'ذخیره‌شده', icon: Icons.bookmark_border, description: 'محتواهایی که ذخیره کرده‌اید'),
+    IranaMenuItem(title: 'بایگانی', icon: Icons.history, description: 'مشاهده محتواهای بایگانی‌شده'),
+    IranaMenuItem(title: 'فعالیت شما', icon: Icons.monitor_heart_outlined, description: 'بررسی فعالیت‌های انجام‌شده در ایرانا'),
+    IranaMenuItem(title: 'اعلان‌ها', icon: Icons.notifications_none, description: 'مدیریت اعلان‌ها و هشدارهای ایرانا'),
+    IranaMenuItem(title: 'مدیریت زمان', icon: Icons.access_time, description: 'مدیریت مدت‌زمان استفاده از ایرانا'),
+    IranaMenuItem(title: 'Instagram ویژه رایانه لوحی', icon: Icons.tablet_android_outlined, description: 'اطلاعات مربوط به نمایش در دستگاه‌های مختلف'),
+    IranaMenuItem(title: 'Meta Verified', icon: Icons.verified_outlined, description: 'اطلاعات مربوط به تأیید حساب'),
+    IranaMenuItem(title: 'حریم خصوصی حساب', icon: Icons.lock_outline, description: 'مدیریت خصوصی یا عمومی بودن حساب'),
+    IranaMenuItem(title: 'دوستان صمیمی', icon: Icons.stars_outlined, description: 'مدیریت فهرست دوستان صمیمی'),
+    IranaMenuItem(title: 'مجوزهای دستگاه', icon: Icons.phone_android, description: 'دسترسی‌های برنامه به امکانات دستگاه'),
+    IranaMenuItem(title: 'بایگانی کردن و دانلود کردن', icon: Icons.download_outlined, description: 'مدیریت بایگانی و دریافت اطلاعات'),
+    IranaMenuItem(title: 'دسترس‌پذیری', icon: Icons.accessibility_new, description: 'تنظیم امکانات دسترس‌پذیری'),
+    IranaMenuItem(title: 'زبان و ترجمه‌ها', icon: Icons.translate, description: 'تنظیم زبان برنامه و ترجمه محتوا'),
+    IranaMenuItem(title: 'مصرف داده و کیفیت رسانه', icon: Icons.signal_cellular_alt, description: 'تنظیم مصرف اینترنت و کیفیت عکس و ویدئو'),
+    IranaMenuItem(title: 'مجوزهای وب‌سایت', icon: Icons.devices, description: 'مدیریت دسترسی‌های وب‌سایت'),
+    IranaMenuItem(title: 'نظرات در «حساب‌های نه‌چندان...»', icon: Icons.home_outlined, description: 'تنظیمات مربوط به تعاملات و نمایش محتوا'),
   ];
 
   void openItem(BuildContext context, IranaMenuItem item) {
@@ -1981,7 +2277,7 @@ class IranaSettingsPage extends StatelessWidget {
   }
 }
 
-// ---------------- INDIVIDUAL SETTINGS PAGES ----------------
+// ---------------- SETTINGS DETAIL ----------------
 
 class IranaSettingDetailPage extends StatefulWidget {
   final IranaMenuItem item;
@@ -2273,7 +2569,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   }
 }
 
-// ---------------- STORY CREATION PAGE ----------------
+// ---------------- STORY CREATE ----------------
 
 class StoryCreatePage extends StatefulWidget {
   final Future<void> Function(XFile file, bool isVideo) onPublish;
