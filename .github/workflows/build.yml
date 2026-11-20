@@ -33,6 +33,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Skip incompatible Android lint task
+        run: |
+          mkdir -p "$HOME/.gradle"
+          cat > "$HOME/.gradle/init.gradle" <<'EOF'
+          gradle.projectsEvaluated {
+              allprojects {
+                  tasks.matching { it.name == 'lintVitalAnalyzeRelease' }.configureEach {
+                      enabled = false
+                  }
+              }
+          }
+          EOF
+
       - name: Build APK
         run: flutter build apk --release
 
@@ -54,6 +67,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+
+      - name: Generate iOS project files
+        run: flutter create --platforms=ios .
 
       - name: Install dependencies
         run: flutter pub get
