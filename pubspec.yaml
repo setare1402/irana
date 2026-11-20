@@ -11,11 +11,25 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
   cupertino_icons: ^1.0.8
+
+  # انتخاب عکس و ویدئو از گالری
+  image_picker: ^1.1.2
+
+  # ذخیره فایل‌های رسانه‌ای
+  path_provider: ^2.1.5
+
+  # ذخیره اطلاعات برنامه
+  shared_preferences: ^2.3.2
+
+  # پخش ویدئو
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
   flutter_lints: ^4.0.0
 
 flutter:
