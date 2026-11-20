@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 
@@ -106,8 +105,7 @@ class IranaStory {
     required this.createdAt,
   });
 
-  bool get expired =>
-      DateTime.now().difference(createdAt).inHours >= 24;
+  bool get expired => DateTime.now().difference(createdAt).inHours >= 24;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -138,7 +136,6 @@ class IranaHome extends StatefulWidget {
 class _IranaHomeState extends State<IranaHome> {
   int selectedIndex = 0;
   bool loading = true;
-
   List<IranaPost> posts = [];
   List<IranaStory> stories = [];
 
@@ -169,11 +166,9 @@ class _IranaHomeState extends State<IranaHome> {
   Future<Directory> get mediaDirectory async {
     final directory = await getApplicationDocumentsDirectory();
     final folder = Directory('${directory.path}/irana_media');
-
     if (!await folder.exists()) {
       await folder.create(recursive: true);
     }
-
     return folder;
   }
 
@@ -194,8 +189,7 @@ class _IranaHomeState extends State<IranaHome> {
       if (storyData != null) {
         stories = (jsonDecode(storyData) as List)
             .map((e) => IranaStory.fromJson(e))
-            .where((s) =>
-                !s.expired && File(s.filePath).existsSync())
+            .where((s) => !s.expired && File(s.filePath).existsSync())
             .toList();
       }
     } catch (_) {
@@ -206,9 +200,7 @@ class _IranaHomeState extends State<IranaHome> {
     await saveData();
 
     if (mounted) {
-      setState(() {
-        loading = false;
-      });
+      setState(() => loading = false);
     }
   }
 
@@ -228,64 +220,55 @@ class _IranaHomeState extends State<IranaHome> {
 
   Future<String> copyMedia(XFile file) async {
     final folder = await mediaDirectory;
-
-    final extension = file.name.contains('.')
-        ? file.name.split('.').last
-        : 'jpg';
-
+    final extension =
+        file.name.contains('.') ? file.name.split('.').last : 'jpg';
     final destination =
         '${folder.path}/${DateTime.now().microsecondsSinceEpoch}.$extension';
-
     await File(file.path).copy(destination);
     return destination;
   }
 
   bool isVideoFile(XFile file) {
     final mime = file.mimeType ?? '';
+    final name = file.name.toLowerCase();
 
     return mime.startsWith('video/') ||
-        file.name.toLowerCase().endsWith('.mp4') ||
-        file.name.toLowerCase().endsWith('.mov') ||
-        file.name.toLowerCase().endsWith('.m4v');
+        name.endsWith('.mp4') ||
+        name.endsWith('.mov') ||
+        name.endsWith('.m4v');
   }
 
+  // صفحه جدید ساخت استوری
   Future<void> addStory() async {
-    try {
-      final file = await picker.pickMedia();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StoryCreatePage(
+          onPublish: (file, video) async {
+            final path = await copyMedia(file);
 
-      if (file == null) return;
+            final story = IranaStory(
+              id: DateTime.now().microsecondsSinceEpoch.toString(),
+              username: 'irana_user',
+              filePath: path,
+              isVideo: video,
+              createdAt: DateTime.now(),
+            );
 
-      final path = await copyMedia(file);
+            if (!mounted) return;
 
-      final story = IranaStory(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        username: 'irana_user',
-        filePath: path,
-        isVideo: isVideoFile(file),
-        createdAt: DateTime.now(),
-      );
+            setState(() {
+              stories.insert(0, story);
+            });
 
-      setState(() {
-        stories.insert(0, story);
-      });
-
-      await saveData();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('استوری منتشر شد 💜')),
-        );
-      }
-    } catch (_) {
-      showError('انتشار استوری انجام نشد');
-    }
+            await saveData();
+          },
+        ),
+      ),
+    );
   }
 
-  Future<void> addPost(
-    XFile file,
-    String caption,
-    bool video,
-  ) async {
+  Future<void> addPost(XFile file, String caption, bool video) async {
     try {
       final path = await copyMedia(file);
 
@@ -317,7 +300,6 @@ class _IranaHomeState extends State<IranaHome> {
 
   void showError(String message) {
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -332,16 +314,13 @@ class _IranaHomeState extends State<IranaHome> {
         return post;
       }).toList();
     });
-
     await saveData();
   }
 
   void openStory(IranaStory story) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => StoryViewer(story: story),
-      ),
+      MaterialPageRoute(builder: (_) => StoryViewer(story: story)),
     );
   }
 
@@ -385,17 +364,11 @@ class _IranaHomeState extends State<IranaHome> {
           actions: [
             IconButton(
               onPressed: () {},
-              icon: const Icon(
-                Icons.favorite_border,
-                color: Colors.black87,
-              ),
+              icon: const Icon(Icons.favorite_border, color: Colors.black87),
             ),
             IconButton(
               onPressed: () {},
-              icon: const Icon(
-                Icons.send_outlined,
-                color: Colors.black87,
-              ),
+              icon: const Icon(Icons.send_outlined, color: Colors.black87),
             ),
             const SizedBox(width: 5),
           ],
@@ -427,18 +400,13 @@ class _IranaHomeState extends State<IranaHome> {
           selectedIndex: selectedIndex,
           indicatorColor: iranaPurple.withOpacity(0.12),
           onDestinationSelected: (index) {
-            setState(() {
-              selectedIndex = index;
-            });
+            setState(() => selectedIndex = index);
           },
           destinations: List.generate(
             pages.length,
             (index) => NavigationDestination(
               icon: Icon(icons[index]),
-              selectedIcon: Icon(
-                icons[index],
-                color: iranaPurple,
-              ),
+              selectedIcon: Icon(icons[index], color: iranaPurple),
               label: pages[index],
             ),
           ),
@@ -475,10 +443,7 @@ class FeedPage extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'استوری‌ها',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 12),
@@ -490,10 +455,7 @@ class FeedPage extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: onAddStory,
-                child: const StoryItem(
-                  name: 'استوری من',
-                  own: true,
-                ),
+                child: const StoryItem(name: 'استوری من', own: true),
               ),
               ...stories.map(
                 (story) => GestureDetector(
@@ -566,28 +528,17 @@ class StoryItem extends StatelessWidget {
             child: CircleAvatar(
               radius: 29,
               backgroundColor: Colors.white,
-              backgroundImage: hasFile && !isVideo
-                  ? FileImage(File(filePath!))
-                  : null,
+              backgroundImage:
+                  hasFile && !isVideo ? FileImage(File(filePath!)) : null,
               child: own
-                  ? const Icon(
-                      Icons.add,
-                      color: iranaPurple,
-                      size: 28,
-                    )
+                  ? const Icon(Icons.add, color: iranaPurple, size: 28)
                   : isVideo
-                      ? const Icon(
-                          Icons.play_arrow,
-                          color: iranaPurple,
-                          size: 32,
-                        )
+                      ? const Icon(Icons.play_arrow,
+                          color: iranaPurple, size: 32)
                       : hasFile
                           ? null
-                          : const Icon(
-                              Icons.person,
-                              color: Colors.grey,
-                              size: 32,
-                            ),
+                          : const Icon(Icons.person,
+                              color: Colors.grey, size: 32),
             ),
           ),
           const SizedBox(height: 5),
@@ -605,7 +556,6 @@ class StoryItem extends StatelessWidget {
 
 class StoryViewer extends StatefulWidget {
   final IranaStory story;
-
   const StoryViewer({super.key, required this.story});
 
   @override
@@ -619,12 +569,8 @@ class _StoryViewerState extends State<StoryViewer> {
   @override
   void initState() {
     super.initState();
-
     if (widget.story.isVideo) {
-      controller = VideoPlayerController.file(
-        File(widget.story.filePath),
-      );
-
+      controller = VideoPlayerController.file(File(widget.story.filePath));
       initializeFuture = controller!.initialize().then((_) {
         controller!.setLooping(true);
         controller!.play();
@@ -657,14 +603,12 @@ class _StoryViewerState extends State<StoryViewer> {
                       color: Colors.white,
                     );
                   }
-
                   if (snapshot.hasError) {
                     return const Text(
                       'پخش ویدئو امکان‌پذیر نیست',
                       style: TextStyle(color: Colors.white),
                     );
                   }
-
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -694,10 +638,7 @@ class _StoryViewerState extends State<StoryViewer> {
                   );
                 },
               )
-            : Image.file(
-                File(widget.story.filePath),
-                fit: BoxFit.contain,
-              ),
+            : Image.file(File(widget.story.filePath), fit: BoxFit.contain),
       ),
     );
   }
@@ -725,7 +666,6 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
   void initState() {
     super.initState();
     controller = VideoPlayerController.file(File(widget.path));
-
     initializeFuture = controller.initialize().then((_) {
       controller.setLooping(true);
       controller.play();
@@ -752,18 +692,14 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
           future: initializeFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator(
-                color: Colors.white,
-              );
+              return const CircularProgressIndicator(color: Colors.white);
             }
-
             if (snapshot.hasError) {
               return const Text(
                 'پخش ویدئو امکان‌پذیر نیست',
                 style: TextStyle(color: Colors.white),
               );
             }
-
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -860,18 +796,13 @@ class PostCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 8,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 IconButton(
                   onPressed: onLike,
                   icon: Icon(
-                    post.liked
-                        ? Icons.favorite
-                        : Icons.favorite_border,
+                    post.liked ? Icons.favorite : Icons.favorite_border,
                     color: post.liked ? Colors.red : Colors.black87,
                   ),
                 ),
@@ -892,14 +823,8 @@ class PostCard extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 4,
-            ),
-            child: Text(
-              post.caption,
-              style: const TextStyle(fontSize: 14),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Text(post.caption, style: const TextStyle(fontSize: 14)),
           ),
           const SizedBox(height: 12),
         ],
@@ -910,7 +835,6 @@ class PostCard extends StatelessWidget {
 
 class SearchPage extends StatefulWidget {
   final List<IranaPost> posts;
-
   const SearchPage({super.key, required this.posts});
 
   @override
@@ -932,11 +856,7 @@ class _SearchPageState extends State<SearchPage> {
       child: Column(
         children: [
           TextField(
-            onChanged: (value) {
-              setState(() {
-                query = value;
-              });
-            },
+            onChanged: (value) => setState(() => query = value),
             decoration: InputDecoration(
               hintText: 'جستجوی افراد و موضوعات...',
               prefixIcon: const Icon(Icons.search),
@@ -951,9 +871,7 @@ class _SearchPageState extends State<SearchPage> {
           const SizedBox(height: 15),
           Expanded(
             child: query.isEmpty
-                ? const Center(
-                    child: Text('جهان ایرانا را کشف کن'),
-                  )
+                ? const Center(child: Text('جهان ایرانا را کشف کن'))
                 : results.isEmpty
                     ? const Center(child: Text('نتیجه‌ای پیدا نشد'))
                     : ListView(
@@ -980,7 +898,6 @@ class _SearchPageState extends State<SearchPage> {
 
 class CreatePage extends StatefulWidget {
   final Future<void> Function(XFile, String, bool) onPublish;
-
   const CreatePage({super.key, required this.onPublish});
 
   @override
@@ -989,9 +906,7 @@ class CreatePage extends StatefulWidget {
 
 class _CreatePageState extends State<CreatePage> {
   final ImagePicker picker = ImagePicker();
-
-  final TextEditingController captionController =
-      TextEditingController();
+  final TextEditingController captionController = TextEditingController();
 
   XFile? selectedMedia;
   bool selectedVideo = false;
@@ -1000,7 +915,6 @@ class _CreatePageState extends State<CreatePage> {
   Future<void> chooseMedia() async {
     try {
       final file = await picker.pickMedia();
-
       if (file != null) {
         final isVideo = file.mimeType?.startsWith('video/') ??
             (file.name.toLowerCase().endsWith('.mp4') ||
@@ -1013,7 +927,6 @@ class _CreatePageState extends State<CreatePage> {
       }
     } catch (_) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('انتخاب فایل انجام نشد')),
       );
@@ -1028,9 +941,7 @@ class _CreatePageState extends State<CreatePage> {
       return;
     }
 
-    setState(() {
-      publishing = true;
-    });
+    setState(() => publishing = true);
 
     try {
       await widget.onPublish(
@@ -1048,11 +959,7 @@ class _CreatePageState extends State<CreatePage> {
         });
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          publishing = false;
-        });
-      }
+      if (mounted) setState(() => publishing = false);
     }
   }
 
@@ -1069,10 +976,7 @@ class _CreatePageState extends State<CreatePage> {
       children: [
         const Text(
           'ساخت پست جدید',
-          style: TextStyle(
-            fontSize: 21,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 20),
         GestureDetector(
@@ -1135,9 +1039,7 @@ class _CreatePageState extends State<CreatePage> {
         ElevatedButton.icon(
           onPressed: publishing ? null : publish,
           icon: const Icon(Icons.publish),
-          label: Text(
-            publishing ? 'در حال انتشار...' : 'انتشار پست',
-          ),
+          label: Text(publishing ? 'در حال انتشار...' : 'انتشار پست'),
           style: ElevatedButton.styleFrom(
             backgroundColor: iranaPurple,
             foregroundColor: Colors.white,
@@ -1173,18 +1075,11 @@ class VideosPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.play_circle_outline,
-              size: 90,
-              color: iranaPurple,
-            ),
+            Icon(Icons.play_circle_outline, size: 90, color: iranaPurple),
             SizedBox(height: 16),
             Text(
               'ویدئوهای ایرانا',
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
             Text('هنوز ویدئویی منتشر نشده است'),
@@ -1195,22 +1090,22 @@ class VideosPage extends StatelessWidget {
 
     return ListView(
       children: [
-        ...videos.map((video) {
-          return ListTile(
+        ...videos.map(
+          (video) => ListTile(
             leading: const Icon(
               Icons.play_circle_fill,
               color: iranaPurple,
               size: 40,
             ),
             title: Text(video.username),
-            subtitle: Text(video.caption.isEmpty
-                ? 'ویدئوی ایرانا'
-                : video.caption),
+            subtitle: Text(
+              video.caption.isEmpty ? 'ویدئوی ایرانا' : video.caption,
+            ),
             onTap: () => onOpenVideo(video),
-          );
-        }),
-        ...storyVideos.map((video) {
-          return ListTile(
+          ),
+        ),
+        ...storyVideos.map(
+          (video) => ListTile(
             leading: const Icon(
               Icons.video_library,
               color: iranaPink,
@@ -1219,8 +1114,8 @@ class VideosPage extends StatelessWidget {
             title: Text(video.username),
             subtitle: const Text('ویدئوی استوری'),
             onTap: () => onOpenStory(video),
-          );
-        }),
+          ),
+        ),
       ],
     );
   }
@@ -1230,7 +1125,6 @@ class VideosPage extends StatelessWidget {
 
 class ProfilePage extends StatefulWidget {
   final List<IranaPost> posts;
-
   const ProfilePage({super.key, required this.posts});
 
   @override
@@ -1244,7 +1138,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String username = 'irana_user';
   String bio = 'به خانواده بزرگ ایرانا خوش آمدید 💜';
   String avatarPath = '';
-
   bool loadingProfile = true;
 
   @override
@@ -1255,14 +1148,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> loadProfile() async {
     final prefs = await SharedPreferences.getInstance();
-
     if (!mounted) return;
 
     setState(() {
-      profileName =
-          prefs.getString('irana_profile_name') ?? 'کاربر ایرانا';
-      username =
-          prefs.getString('irana_profile_username') ?? 'irana_user';
+      profileName = prefs.getString('irana_profile_name') ?? 'کاربر ایرانا';
+      username = prefs.getString('irana_profile_username') ?? 'irana_user';
       bio = prefs.getString('irana_profile_bio') ??
           'به خانواده بزرگ ایرانا خوش آمدید 💜';
       avatarPath = prefs.getString('irana_profile_avatar') ?? '';
@@ -1272,7 +1162,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> saveProfile() async {
     final prefs = await SharedPreferences.getInstance();
-
     await prefs.setString('irana_profile_name', profileName);
     await prefs.setString('irana_profile_username', username);
     await prefs.setString('irana_profile_bio', bio);
@@ -1326,8 +1215,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(dialogContext, false),
+                  onPressed: () => Navigator.pop(dialogContext, false),
                   child: const Text('انصراف'),
                 ),
                 ElevatedButton(
@@ -1347,7 +1235,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                       return;
                     }
-
                     Navigator.pop(dialogContext, true);
                   },
                   child: const Text('ذخیره تغییرات'),
@@ -1369,9 +1256,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('پروفایل با موفقیت ذخیره شد 💜'),
-            ),
+            const SnackBar(content: Text('پروفایل با موفقیت ذخیره شد 💜')),
           );
         }
       }
@@ -1398,37 +1283,26 @@ class _ProfilePageState extends State<ProfilePage> {
         await folder.create(recursive: true);
       }
 
-      final extension = file.name.contains('.')
-          ? file.name.split('.').last
-          : 'jpg';
-
+      final extension =
+          file.name.contains('.') ? file.name.split('.').last : 'jpg';
       final destination =
           '${folder.path}/profile_${DateTime.now().microsecondsSinceEpoch}.$extension';
 
       await File(file.path).copy(destination);
-
       if (!mounted) return;
 
-      setState(() {
-        avatarPath = destination;
-      });
-
+      setState(() => avatarPath = destination);
       await saveProfile();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('عکس پروفایل تغییر کرد 💜'),
-          ),
+          const SnackBar(content: Text('عکس پروفایل تغییر کرد 💜')),
         );
       }
     } catch (_) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تغییر عکس پروفایل انجام نشد'),
-        ),
+        const SnackBar(content: Text('تغییر عکس پروفایل انجام نشد')),
       );
     }
   }
@@ -1492,10 +1366,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     SizedBox(height: 5),
                     Text(
                       'پروفایل من',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
                   ],
                 ),
@@ -1556,14 +1427,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 7),
                 TextButton.icon(
                   onPressed: changeAvatar,
-                  icon: const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 18,
-                  ),
+                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
                   label: const Text('تغییر عکس پروفایل'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: iranaPurple,
-                  ),
+                  style: TextButton.styleFrom(foregroundColor: iranaPurple),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -1577,20 +1443,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const SizedBox(width: 5),
-                    const Icon(
-                      Icons.verified,
-                      color: iranaPurple,
-                      size: 19,
-                    ),
+                    const Icon(Icons.verified, color: iranaPurple, size: 19),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '@$username',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 const SizedBox(height: 20),
                 Padding(
@@ -1602,14 +1461,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         number: widget.posts.length.toString(),
                         label: 'پست',
                       ),
-                      const ProfileStat(
-                        number: '0',
-                        label: 'دنبال‌کننده',
-                      ),
-                      const ProfileStat(
-                        number: '0',
-                        label: 'دنبال‌شونده',
-                      ),
+                      const ProfileStat(number: '0', label: 'دنبال‌کننده'),
+                      const ProfileStat(number: '0', label: 'دنبال‌شونده'),
                     ],
                   ),
                 ),
@@ -1626,9 +1479,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: iranaPurple,
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 13,
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -1721,16 +1572,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 18),
                 const Divider(height: 1),
                 const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 15,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 15),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.grid_on,
-                        color: iranaPurple,
-                      ),
+                      Icon(Icons.grid_on, color: iranaPurple),
                       SizedBox(width: 9),
                       Text(
                         'پست‌های من',
@@ -1792,10 +1637,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     size: 40,
                                   ),
                                 )
-                              : Image.file(
-                                  file,
-                                  fit: BoxFit.cover,
-                                ),
+                              : Image.file(file, fit: BoxFit.cover),
                           if (post.isVideo)
                             const Positioned(
                               top: 5,
@@ -1842,25 +1684,16 @@ class _ProfileHighlight extends StatelessWidget {
             height: 58,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isNew
-                  ? const Color(0xFFEDE2F7)
-                  : Colors.white,
+              color: isNew ? const Color(0xFFEDE2F7) : Colors.white,
               border: Border.all(
                 color: isNew ? iranaPurple : iranaGold,
                 width: 2,
               ),
             ),
-            child: Icon(
-              icon,
-              color: iranaPurple,
-              size: 27,
-            ),
+            child: Icon(icon, color: iranaPurple, size: 27),
           ),
           const SizedBox(height: 5),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(title, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );
@@ -1883,10 +1716,7 @@ class ProfileStat extends StatelessWidget {
       children: [
         Text(
           number,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         Text(label),
       ],
@@ -2104,26 +1934,13 @@ class IranaSettingsPage extends StatelessWidget {
 
   Widget menuTile(BuildContext context, IranaMenuItem item) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 3,
-      ),
-      leading: Icon(
-        item.icon,
-        color: Colors.black87,
-        size: 26,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 3),
+      leading: Icon(item.icon, color: Colors.black87, size: 26),
       title: Text(
         item.title,
-        style: const TextStyle(
-          fontSize: 15,
-          color: Colors.black87,
-        ),
+        style: const TextStyle(fontSize: 15, color: Colors.black87),
       ),
-      trailing: const Icon(
-        Icons.chevron_left,
-        color: Colors.grey,
-      ),
+      trailing: const Icon(Icons.chevron_left, color: Colors.grey),
       onTap: () => openItem(context, item),
     );
   }
@@ -2140,33 +1957,22 @@ class IranaSettingsPage extends StatelessWidget {
           foregroundColor: Colors.black,
           title: const Text(
             'تنظیمات و فعالیت',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
         body: ListView(
           children: [
             sectionTitle('نحوه تعامل شما با دیگران'),
-            ...menuItems.take(12).map(
-                  (item) => menuTile(context, item),
-                ),
+            ...menuItems.take(12).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
             sectionTitle('آنچه می‌بینید'),
-            ...menuItems.skip(12).take(5).map(
-                  (item) => menuTile(context, item),
-                ),
+            ...menuItems.skip(12).take(5).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
             sectionTitle('حساب و تنظیمات'),
-            ...menuItems.skip(17).take(7).map(
-                  (item) => menuTile(context, item),
-                ),
+            ...menuItems.skip(17).take(7).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
             sectionTitle('برنامه و رسانه‌های شما'),
-            ...menuItems.skip(24).map(
-                  (item) => menuTile(context, item),
-                ),
+            ...menuItems.skip(24).map((item) => menuTile(context, item)),
             const SizedBox(height: 30),
           ],
         ),
@@ -2180,22 +1986,17 @@ class IranaSettingsPage extends StatelessWidget {
 class IranaSettingDetailPage extends StatefulWidget {
   final IranaMenuItem item;
 
-  const IranaSettingDetailPage({
-    super.key,
-    required this.item,
-  });
+  const IranaSettingDetailPage({super.key, required this.item});
 
   @override
   State<IranaSettingDetailPage> createState() =>
       _IranaSettingDetailPageState();
 }
 
-class _IranaSettingDetailPageState
-    extends State<IranaSettingDetailPage> {
+class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   bool mainSwitch = true;
   bool secondSwitch = false;
   String selectedOption = 'پیش‌فرض';
-
   final TextEditingController textController = TextEditingController();
 
   @override
@@ -2231,9 +2032,7 @@ class _IranaSettingDetailPageState
       title: Text(title),
       onChanged: (newValue) {
         if (newValue == null) return;
-        setState(() {
-          selectedOption = newValue;
-        });
+        setState(() => selectedOption = newValue);
       },
     );
   }
@@ -2252,10 +2051,7 @@ class _IranaSettingDetailPageState
           foregroundColor: Colors.black,
           title: Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
         ),
         body: ListView(
@@ -2287,10 +2083,7 @@ class _IranaSettingDetailPageState
                   Text(
                     widget.item.description,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      height: 1.8,
-                    ),
+                    style: const TextStyle(color: Colors.grey, height: 1.8),
                   ),
                 ],
               ),
@@ -2300,11 +2093,7 @@ class _IranaSettingDetailPageState
               settingSwitch(
                 title: 'حساب خصوصی',
                 value: mainSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    mainSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => mainSwitch = value),
               ),
               const Padding(
                 padding: EdgeInsets.all(16),
@@ -2317,20 +2106,12 @@ class _IranaSettingDetailPageState
               settingSwitch(
                 title: 'فعال‌بودن اعلان‌ها',
                 value: mainSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    mainSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => mainSwitch = value),
               ),
               settingSwitch(
                 title: 'اعلان پیام‌ها',
                 value: secondSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    secondSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => secondSwitch = value),
               ),
             ] else if (title == 'زبان و ترجمه‌ها') ...[
               optionTile('فارسی', 'فارسی'),
@@ -2359,11 +2140,7 @@ class _IranaSettingDetailPageState
               settingSwitch(
                 title: 'یادآوری زمان استفاده',
                 value: mainSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    mainSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => mainSwitch = value),
               ),
               const ListTile(
                 title: Text('مدت‌زمان روزانه'),
@@ -2403,20 +2180,12 @@ class _IranaSettingDetailPageState
               settingSwitch(
                 title: 'اجازه دریافت نظر',
                 value: mainSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    mainSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => mainSwitch = value),
               ),
               settingSwitch(
                 title: 'فیلتر نظرات نامناسب',
                 value: secondSwitch,
-                onChanged: (value) {
-                  setState(() {
-                    secondSwitch = value;
-                  });
-                },
+                onChanged: (value) => setState(() => secondSwitch = value),
               ),
             ] else if (title == 'دوستان صمیمی') ...[
               const ListTile(
@@ -2491,15 +2260,522 @@ class _IranaSettingDetailPageState
                     Text(
                       'عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey,
-                        height: 1.8,
-                      ),
+                      style: TextStyle(color: Colors.grey, height: 1.8),
                     ),
                   ],
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- STORY CREATION PAGE ----------------
+
+class StoryCreatePage extends StatefulWidget {
+  final Future<void> Function(XFile file, bool isVideo) onPublish;
+
+  const StoryCreatePage({
+    super.key,
+    required this.onPublish,
+  });
+
+  @override
+  State<StoryCreatePage> createState() => _StoryCreatePageState();
+}
+
+class _StoryCreatePageState extends State<StoryCreatePage> {
+  final ImagePicker picker = ImagePicker();
+
+  XFile? selectedFile;
+  bool selectedVideo = false;
+  bool publishing = false;
+
+  bool isVideoFile(XFile file) {
+    final mime = file.mimeType ?? '';
+    final name = file.name.toLowerCase();
+
+    return mime.startsWith('video/') ||
+        name.endsWith('.mp4') ||
+        name.endsWith('.mov') ||
+        name.endsWith('.m4v');
+  }
+
+  Future<void> chooseGallery() async {
+    try {
+      final file = await picker.pickMedia();
+      if (file == null || !mounted) return;
+
+      setState(() {
+        selectedFile = file;
+        selectedVideo = isVideoFile(file);
+      });
+    } catch (_) {
+      showMessage('بازکردن گالری انجام نشد');
+    }
+  }
+
+  Future<void> takePhoto() async {
+    try {
+      final file = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 90,
+      );
+
+      if (file == null || !mounted) return;
+
+      setState(() {
+        selectedFile = file;
+        selectedVideo = false;
+      });
+    } catch (_) {
+      showMessage('بازکردن دوربین انجام نشد');
+    }
+  }
+
+  Future<void> recordVideo() async {
+    try {
+      final file = await picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(seconds: 60),
+      );
+
+      if (file == null || !mounted) return;
+
+      setState(() {
+        selectedFile = file;
+        selectedVideo = true;
+      });
+    } catch (_) {
+      showMessage('ضبط ویدئو انجام نشد');
+    }
+  }
+
+  void showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void showComingSoon(String feature) {
+    showMessage('$feature در مرحله بعد فعال می‌شود 💜');
+  }
+
+  Future<void> publishStory() async {
+    if (selectedFile == null) {
+      showMessage('ابتدا عکس یا ویدئو انتخاب کن');
+      return;
+    }
+
+    setState(() => publishing = true);
+
+    try {
+      await widget.onPublish(selectedFile!, selectedVideo);
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('استوری منتشر شد 💜')),
+      );
+    } catch (_) {
+      if (mounted) showMessage('انتشار استوری انجام نشد');
+    } finally {
+      if (mounted) setState(() => publishing = false);
+    }
+  }
+
+  Widget actionItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        child: Column(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: (color ?? iranaPurple).withOpacity(0.10),
+                borderRadius: BorderRadius.circular(17),
+              ),
+              child: Icon(
+                icon,
+                color: color ?? iranaPurple,
+                size: 27,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF17131D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF17131D),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'افزودن به داستان',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'تنظیمات استوری',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const StorySettingsPage(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.settings_outlined),
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: selectedFile == null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 145,
+                              height: 145,
+                              decoration: BoxDecoration(
+                                color: iranaPurple.withOpacity(0.22),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                                color: Colors.white,
+                                size: 75,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'داستان جدید خود را بساز',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 9),
+                            const Text(
+                              'یک عکس یا ویدئو انتخاب کن',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: selectedVideo
+                              ? Container(
+                                  width: double.infinity,
+                                  color: Colors.black,
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.play_circle_fill,
+                                        color: Colors.white,
+                                        size: 90,
+                                      ),
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'ویدئوی انتخاب‌شده',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Image.file(
+                                  File(selectedFile!.path),
+                                  width: double.infinity,
+                                  fit: BoxFit.contain,
+                                ),
+                        ),
+                      ),
+              ),
+              Container(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF24202B),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(22),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    if (selectedFile == null) ...[
+                      const Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'ساخت داستان',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        actionItem(
+                          icon: Icons.camera_alt_outlined,
+                          title: 'دوربین',
+                          onTap: takePhoto,
+                        ),
+                        actionItem(
+                          icon: Icons.photo_library_outlined,
+                          title: 'گالری',
+                          onTap: chooseGallery,
+                        ),
+                        actionItem(
+                          icon: Icons.music_note,
+                          title: 'موسیقی',
+                          onTap: () => showComingSoon('موسیقی'),
+                          color: iranaPink,
+                        ),
+                        actionItem(
+                          icon: Icons.grid_view_rounded,
+                          title: 'کلاژ',
+                          onTap: () => showComingSoon('کلاژ'),
+                        ),
+                        actionItem(
+                          icon: Icons.dashboard_outlined,
+                          title: 'قالب‌ها',
+                          onTap: () => showComingSoon('قالب‌ها'),
+                          color: iranaGold,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    if (selectedFile == null)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: recordVideo,
+                          icon: const Icon(Icons.videocam_outlined),
+                          label: const Text('ضبط ویدئو با دوربین'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white38),
+                            padding: const EdgeInsets.all(13),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  selectedFile = null;
+                                  selectedVideo = false;
+                                });
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                side: const BorderSide(color: Colors.white38),
+                                padding: const EdgeInsets.all(14),
+                              ),
+                              child: const Text('انتخاب مجدد'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: publishing ? null : publishStory,
+                              icon: const Icon(Icons.send),
+                              label: Text(
+                                publishing ? 'در حال انتشار...' : 'انتشار استوری',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: iranaPurple,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.all(14),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- STORY SETTINGS ----------------
+
+class StorySettingsPage extends StatefulWidget {
+  const StorySettingsPage({super.key});
+
+  @override
+  State<StorySettingsPage> createState() => _StorySettingsPageState();
+}
+
+class _StorySettingsPageState extends State<StorySettingsPage> {
+  bool hideFromSelected = false;
+  bool allowReplies = true;
+  bool allowSharing = true;
+  bool saveToGallery = false;
+
+  Widget settingSwitch({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      onChanged: onChanged,
+      activeColor: iranaPurple,
+      title: Text(title),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(color: Colors.grey, fontSize: 12),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          title: const Text(
+            'تنظیمات داستان',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: ListView(
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(18, 20, 18, 10),
+              child: Text(
+                'حریم خصوصی داستان',
+                style: TextStyle(
+                  color: iranaPurple,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            settingSwitch(
+              title: 'مخفی کردن داستان از افراد انتخاب‌شده',
+              subtitle: 'انتخاب افراد در نسخه بعدی اضافه می‌شود',
+              value: hideFromSelected,
+              onChanged: (value) {
+                setState(() => hideFromSelected = value);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(18, 15, 18, 10),
+              child: Text(
+                'پاسخ‌ها و اشتراک‌گذاری',
+                style: TextStyle(
+                  color: iranaPurple,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            settingSwitch(
+              title: 'اجازه پاسخ به داستان',
+              subtitle: 'تنظیم نمایشی در نسخه فعلی',
+              value: allowReplies,
+              onChanged: (value) {
+                setState(() => allowReplies = value);
+              },
+            ),
+            settingSwitch(
+              title: 'اجازه اشتراک‌گذاری داستان',
+              subtitle: 'تنظیم نمایشی در نسخه فعلی',
+              value: allowSharing,
+              onChanged: (value) {
+                setState(() => allowSharing = value);
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(18, 15, 18, 10),
+              child: Text(
+                'ذخیره‌سازی',
+                style: TextStyle(
+                  color: iranaPurple,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            settingSwitch(
+              title: 'ذخیره داستان در گالری',
+              subtitle: 'ذخیره خودکار در گالری در مرحله بعد فعال می‌شود',
+              value: saveToGallery,
+              onChanged: (value) {
+                setState(() => saveToGallery = value);
+              },
+            ),
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: Text(
+                'این صفحه فعلاً ساختار اولیه تنظیمات استوری را دارد. گزینه‌های کامل‌تر را بعداً مطابق طرحی که می‌خواهی اضافه می‌کنیم.',
+                style: TextStyle(color: Colors.grey, height: 1.8),
+              ),
+            ),
           ],
         ),
       ),
