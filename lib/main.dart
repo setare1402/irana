@@ -1280,10 +1280,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> editProfile() async {
-    final nameController =
-        TextEditingController(text: profileName);
-    final usernameController =
-        TextEditingController(text: username);
+    final nameController = TextEditingController(text: profileName);
+    final usernameController = TextEditingController(text: username);
     final bioController = TextEditingController(text: bio);
 
     try {
@@ -1363,9 +1361,7 @@ class _ProfilePageState extends State<ProfilePage> {
       if (result == true && mounted) {
         setState(() {
           profileName = nameController.text.trim();
-          username = usernameController.text
-              .trim()
-              .replaceAll('@', '');
+          username = usernameController.text.trim().replaceAll('@', '');
           bio = bioController.text.trim();
         });
 
@@ -1459,7 +1455,6 @@ class _ProfilePageState extends State<ProfilePage> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // هدر پروفایل
           Container(
             height: 145,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1478,10 +1473,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 bottomRight: Radius.circular(30),
               ),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
+                const Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1504,20 +1499,38 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                 ),
-                Icon(
-                  Icons.auto_awesome,
-                  color: iranaGold,
-                  size: 55,
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'منوی تنظیمات',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const IranaSettingsPage(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                        size: 34,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: iranaGold,
+                      size: 45,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-
           Transform.translate(
             offset: const Offset(0, -43),
             child: Column(
               children: [
-                // عکس پروفایل
                 GestureDetector(
                   onTap: changeAvatar,
                   child: Container(
@@ -1553,8 +1566,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 4),
-
-                // نام و نام کاربری
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -1582,8 +1593,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // آمار
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Row(
@@ -1605,8 +1614,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // دکمه‌های پروفایل
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Row(
@@ -1655,10 +1662,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 18),
-
-                // بیوگرافی
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.symmetric(horizontal: 18),
@@ -1673,10 +1677,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     style: const TextStyle(fontSize: 14),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                // هایلایت استوری‌ها
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 18),
                   child: Align(
@@ -1717,11 +1718,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 18),
                 const Divider(height: 1),
-
-                // عنوان بخش پست‌ها
                 const Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 18,
@@ -1744,7 +1742,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-
                 if (widget.posts.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 35),
@@ -1893,6 +1890,619 @@ class ProfileStat extends StatelessWidget {
         ),
         Text(label),
       ],
+    );
+  }
+}
+
+// ---------------- IRANA SETTINGS MENU ----------------
+
+class IranaMenuItem {
+  final String title;
+  final IconData icon;
+  final String description;
+
+  const IranaMenuItem({
+    required this.title,
+    required this.icon,
+    required this.description,
+  });
+}
+
+class IranaSettingsPage extends StatelessWidget {
+  const IranaSettingsPage({super.key});
+
+  static const List<IranaMenuItem> menuItems = [
+    IranaMenuItem(
+      title: 'پست کردن هم‌زمان',
+      icon: Icons.dashboard_customize_outlined,
+      description: 'مدیریت انتشار هم‌زمان محتوا در بخش‌های مختلف ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'مسدودشده‌ها',
+      icon: Icons.block,
+      description: 'فهرست حساب‌هایی که مسدود کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'پنهان کردن داستان و پخش زنده',
+      icon: Icons.notifications_off_outlined,
+      description: 'مدیریت افرادی که نمی‌خواهید داستان یا پخش زنده‌شان را ببینید',
+    ),
+    IranaMenuItem(
+      title: 'فعالیت در فهرست دوستان',
+      icon: Icons.people_outline,
+      description: 'تنظیم نمایش فعالیت شما برای دوستان',
+    ),
+    IranaMenuItem(
+      title: 'پیام‌ها و پاسخ‌ها به داستان',
+      icon: Icons.send_outlined,
+      description: 'تنظیم پیام‌ها و پاسخ‌های دریافتی',
+    ),
+    IranaMenuItem(
+      title: 'نشان‌ها و ذکر نام‌ها',
+      icon: Icons.alternate_email,
+      description: 'مدیریت اشاره‌ها و برچسب‌گذاری حساب شما',
+    ),
+    IranaMenuItem(
+      title: 'نظرات',
+      icon: Icons.chat_bubble_outline,
+      description: 'مدیریت نظرات و پاسخ‌ها',
+    ),
+    IranaMenuItem(
+      title: 'اشتراک‌گذاری',
+      icon: Icons.repeat,
+      description: 'تنظیم نحوه اشتراک‌گذاری محتوا',
+    ),
+    IranaMenuItem(
+      title: 'محدودشده‌ها',
+      icon: Icons.person_off_outlined,
+      description: 'مدیریت حساب‌های محدودشده',
+    ),
+    IranaMenuItem(
+      title: 'محدود کردن تعاملات',
+      icon: Icons.report_gmailerrorred_outlined,
+      description: 'کنترل تعاملات و ارتباطات ناخواسته',
+    ),
+    IranaMenuItem(
+      title: 'کلمات پنهان‌شده',
+      icon: Icons.text_fields,
+      description: 'مدیریت کلمات و عبارت‌های پنهان‌شده',
+    ),
+    IranaMenuItem(
+      title: 'دنبال کردن و دعوت از دوستان',
+      icon: Icons.person_add_alt_1,
+      description: 'دعوت دوستان برای پیوستن به ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'موارد دلخواه',
+      icon: Icons.star_border,
+      description: 'دسترسی به محتواهای مورد علاقه شما',
+    ),
+    IranaMenuItem(
+      title: 'حساب‌های بی‌صداشده',
+      icon: Icons.volume_off_outlined,
+      description: 'مدیریت حساب‌هایی که بی‌صدا کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'اولویت‌های محتوا',
+      icon: Icons.tune,
+      description: 'تنظیم محتواهایی که بیشتر به شما نمایش داده می‌شوند',
+    ),
+    IranaMenuItem(
+      title: 'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها',
+      icon: Icons.favorite_border,
+      description: 'تنظیم نمایش آمار پسندیدن و اشتراک‌گذاری',
+    ),
+    IranaMenuItem(
+      title: 'حساب Meta',
+      icon: Icons.all_inclusive,
+      description: 'تنظیمات حساب و خدمات مرتبط با Meta در آینده',
+    ),
+    IranaMenuItem(
+      title: 'ذخیره‌شده',
+      icon: Icons.bookmark_border,
+      description: 'محتواهایی که ذخیره کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'بایگانی',
+      icon: Icons.history,
+      description: 'مشاهده محتواهای بایگانی‌شده',
+    ),
+    IranaMenuItem(
+      title: 'فعالیت شما',
+      icon: Icons.monitor_heart_outlined,
+      description: 'بررسی فعالیت‌های انجام‌شده در ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'اعلان‌ها',
+      icon: Icons.notifications_none,
+      description: 'مدیریت اعلان‌ها و هشدارهای ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'مدیریت زمان',
+      icon: Icons.access_time,
+      description: 'مدیریت مدت‌زمان استفاده از ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'Instagram ویژه رایانه لوحی',
+      icon: Icons.tablet_android_outlined,
+      description: 'اطلاعات مربوط به نمایش در دستگاه‌های مختلف',
+    ),
+    IranaMenuItem(
+      title: 'Meta Verified',
+      icon: Icons.verified_outlined,
+      description: 'اطلاعات مربوط به تأیید حساب',
+    ),
+    IranaMenuItem(
+      title: 'حریم خصوصی حساب',
+      icon: Icons.lock_outline,
+      description: 'مدیریت خصوصی یا عمومی بودن حساب',
+    ),
+    IranaMenuItem(
+      title: 'دوستان صمیمی',
+      icon: Icons.stars_outlined,
+      description: 'مدیریت فهرست دوستان صمیمی',
+    ),
+    IranaMenuItem(
+      title: 'مجوزهای دستگاه',
+      icon: Icons.phone_android,
+      description: 'دسترسی‌های برنامه به امکانات دستگاه',
+    ),
+    IranaMenuItem(
+      title: 'بایگانی کردن و دانلود کردن',
+      icon: Icons.download_outlined,
+      description: 'مدیریت بایگانی و دریافت اطلاعات',
+    ),
+    IranaMenuItem(
+      title: 'دسترس‌پذیری',
+      icon: Icons.accessibility_new,
+      description: 'تنظیم امکانات دسترس‌پذیری',
+    ),
+    IranaMenuItem(
+      title: 'زبان و ترجمه‌ها',
+      icon: Icons.translate,
+      description: 'تنظیم زبان برنامه و ترجمه محتوا',
+    ),
+    IranaMenuItem(
+      title: 'مصرف داده و کیفیت رسانه',
+      icon: Icons.signal_cellular_alt,
+      description: 'تنظیم مصرف اینترنت و کیفیت عکس و ویدئو',
+    ),
+    IranaMenuItem(
+      title: 'مجوزهای وب‌سایت',
+      icon: Icons.devices,
+      description: 'مدیریت دسترسی‌های وب‌سایت',
+    ),
+    IranaMenuItem(
+      title: 'نظرات در «حساب‌های نه‌چندان...»',
+      icon: Icons.home_outlined,
+      description: 'تنظیمات مربوط به تعاملات و نمایش محتوا',
+    ),
+  ];
+
+  void openItem(BuildContext context, IranaMenuItem item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => IranaSettingDetailPage(item: item),
+      ),
+    );
+  }
+
+  Widget sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 22, 18, 10),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.grey,
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget menuTile(BuildContext context, IranaMenuItem item) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 3,
+      ),
+      leading: Icon(
+        item.icon,
+        color: Colors.black87,
+        size: 26,
+      ),
+      title: Text(
+        item.title,
+        style: const TextStyle(
+          fontSize: 15,
+          color: Colors.black87,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_left,
+        color: Colors.grey,
+      ),
+      onTap: () => openItem(context, item),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: Colors.black,
+          title: const Text(
+            'تنظیمات و فعالیت',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+        ),
+        body: ListView(
+          children: [
+            sectionTitle('نحوه تعامل شما با دیگران'),
+            ...menuItems.take(12).map(
+                  (item) => menuTile(context, item),
+                ),
+            const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
+            sectionTitle('آنچه می‌بینید'),
+            ...menuItems.skip(12).take(5).map(
+                  (item) => menuTile(context, item),
+                ),
+            const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
+            sectionTitle('حساب و تنظیمات'),
+            ...menuItems.skip(17).take(7).map(
+                  (item) => menuTile(context, item),
+                ),
+            const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
+            sectionTitle('برنامه و رسانه‌های شما'),
+            ...menuItems.skip(24).map(
+                  (item) => menuTile(context, item),
+                ),
+            const SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- INDIVIDUAL SETTINGS PAGES ----------------
+
+class IranaSettingDetailPage extends StatefulWidget {
+  final IranaMenuItem item;
+
+  const IranaSettingDetailPage({
+    super.key,
+    required this.item,
+  });
+
+  @override
+  State<IranaSettingDetailPage> createState() =>
+      _IranaSettingDetailPageState();
+}
+
+class _IranaSettingDetailPageState
+    extends State<IranaSettingDetailPage> {
+  bool mainSwitch = true;
+  bool secondSwitch = false;
+  String selectedOption = 'پیش‌فرض';
+
+  final TextEditingController textController = TextEditingController();
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Widget settingSwitch({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      activeColor: iranaPurple,
+      title: Text(title),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget optionTile(String title, String value) {
+    return RadioListTile<String>(
+      value: value,
+      groupValue: selectedOption,
+      activeColor: iranaPurple,
+      title: Text(title),
+      onChanged: (newValue) {
+        if (newValue == null) return;
+        setState(() {
+          selectedOption = newValue;
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.item.title;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          foregroundColor: Colors.black,
+          title: Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: const Color(0xFFEDE2F7),
+                    child: Icon(
+                      widget.item.icon,
+                      size: 34,
+                      color: iranaPurple,
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 19,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.item.description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      height: 1.8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
+            if (title == 'حریم خصوصی حساب') ...[
+              settingSwitch(
+                title: 'حساب خصوصی',
+                value: mainSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    mainSwitch = value;
+                  });
+                },
+              ),
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.',
+                  style: TextStyle(color: Colors.grey, height: 1.7),
+                ),
+              ),
+            ] else if (title == 'اعلان‌ها') ...[
+              settingSwitch(
+                title: 'فعال‌بودن اعلان‌ها',
+                value: mainSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    mainSwitch = value;
+                  });
+                },
+              ),
+              settingSwitch(
+                title: 'اعلان پیام‌ها',
+                value: secondSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    secondSwitch = value;
+                  });
+                },
+              ),
+            ] else if (title == 'زبان و ترجمه‌ها') ...[
+              optionTile('فارسی', 'فارسی'),
+              optionTile('English', 'English'),
+              optionTile('العربية', 'العربية'),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    showMessage(
+                      'زبان انتخابی در این نسخه نمایشی ذخیره نشده است',
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: iranaPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('ثبت انتخاب'),
+                ),
+              ),
+            ] else if (title == 'مصرف داده و کیفیت رسانه') ...[
+              optionTile('کیفیت خودکار', 'پیش‌فرض'),
+              optionTile('کیفیت بالا', 'کیفیت بالا'),
+              optionTile('صرفه‌جویی در مصرف داده', 'صرفه‌جویی'),
+            ] else if (title == 'مدیریت زمان') ...[
+              settingSwitch(
+                title: 'یادآوری زمان استفاده',
+                value: mainSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    mainSwitch = value;
+                  });
+                },
+              ),
+              const ListTile(
+                title: Text('مدت‌زمان روزانه'),
+                subtitle: Text('بعداً امکان تعیین محدودیت زمانی اضافه می‌شود'),
+              ),
+            ] else if (title == 'کلمات پنهان‌شده') ...[
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(
+                    labelText: 'افزودن کلمه یا عبارت',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (textController.text.trim().isEmpty) {
+                      showMessage('ابتدا یک کلمه وارد کن');
+                    } else {
+                      showMessage(
+                        'ثبت کلمه در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود',
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: iranaPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('افزودن کلمه'),
+                ),
+              ),
+            ] else if (title == 'نظرات') ...[
+              settingSwitch(
+                title: 'اجازه دریافت نظر',
+                value: mainSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    mainSwitch = value;
+                  });
+                },
+              ),
+              settingSwitch(
+                title: 'فیلتر نظرات نامناسب',
+                value: secondSwitch,
+                onChanged: (value) {
+                  setState(() {
+                    secondSwitch = value;
+                  });
+                },
+              ),
+            ] else if (title == 'دوستان صمیمی') ...[
+              const ListTile(
+                leading: Icon(Icons.people_outline),
+                title: Text('فهرست دوستان صمیمی'),
+                subtitle: Text(
+                  'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.',
+                ),
+              ),
+            ] else if (title == 'مجوزهای دستگاه') ...[
+              const ListTile(
+                leading: Icon(Icons.photo_outlined),
+                title: Text('دسترسی به عکس‌ها و ویدئوها'),
+                subtitle: Text('برای انتخاب رسانه از گالری استفاده می‌شود'),
+              ),
+              const ListTile(
+                leading: Icon(Icons.camera_alt_outlined),
+                title: Text('دوربین'),
+                subtitle: Text('در صورت نیاز به قابلیت عکس‌برداری'),
+              ),
+            ] else if (title == 'ذخیره‌شده') ...[
+              const ListTile(
+                leading: Icon(Icons.bookmark_border),
+                title: Text('محتوای ذخیره‌شده'),
+                subtitle: Text(
+                  'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.',
+                ),
+              ),
+            ] else if (title == 'بایگانی') ...[
+              const ListTile(
+                leading: Icon(Icons.archive_outlined),
+                title: Text('بایگانی محتوا'),
+                subtitle: Text(
+                  'در این نسخه هنوز محتوایی به بایگانی منتقل نمی‌شود.',
+                ),
+              ),
+            ] else if (title == 'فعالیت شما') ...[
+              const ListTile(
+                leading: Icon(Icons.favorite_border),
+                title: Text('فعالیت‌ها'),
+                subtitle: Text(
+                  'سوابق پسندیدن، نظرها و تعاملات در نسخه بعدی نمایش داده می‌شود.',
+                ),
+              ),
+            ] else if (title == 'موارد دلخواه') ...[
+              const ListTile(
+                leading: Icon(Icons.star_border),
+                title: Text('فهرست موارد دلخواه'),
+                subtitle: Text(
+                  'با اضافه‌شدن قابلیت دنبال‌کردن و ذخیره‌سازی، این بخش کامل می‌شود.',
+                ),
+              ),
+            ] else ...[
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.construction_outlined,
+                      size: 48,
+                      color: iranaPurple,
+                    ),
+                    SizedBox(height: 15),
+                    Text(
+                      'صفحه اختصاصی این بخش ایجاد شد',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey,
+                        height: 1.8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
