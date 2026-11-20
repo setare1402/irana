@@ -16,6 +16,7 @@ void main() {
 const Color iranaPurple = Color(0xFF7139A8);
 const Color iranaPink = Color(0xFFE84B91);
 const Color iranaBg = Color(0xFFFAF9FC);
+const Color iranaGold = Color(0xFFFFD778);
 
 class IranaApp extends StatelessWidget {
   const IranaApp({super.key});
@@ -68,14 +69,14 @@ class IranaPost {
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'caption': caption,
-    'imagePath': imagePath,
-    'date': date.toIso8601String(),
-    'liked': liked,
-    'isVideo': isVideo,
-  };
+        'id': id,
+        'username': username,
+        'caption': caption,
+        'imagePath': imagePath,
+        'date': date.toIso8601String(),
+        'liked': liked,
+        'isVideo': isVideo,
+      };
 
   factory IranaPost.fromJson(Map<String, dynamic> json) {
     return IranaPost(
@@ -109,12 +110,12 @@ class IranaStory {
       DateTime.now().difference(createdAt).inHours >= 24;
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'filePath': filePath,
-    'isVideo': isVideo,
-    'createdAt': createdAt.toIso8601String(),
-  };
+        'id': id,
+        'username': username,
+        'filePath': filePath,
+        'isVideo': isVideo,
+        'createdAt': createdAt.toIso8601String(),
+      };
 
   factory IranaStory.fromJson(Map<String, dynamic> json) {
     return IranaStory(
@@ -1002,8 +1003,8 @@ class _CreatePageState extends State<CreatePage> {
 
       if (file != null) {
         final isVideo = file.mimeType?.startsWith('video/') ??
-            file.name.toLowerCase().endsWith('.mp4') ||
-            file.name.toLowerCase().endsWith('.mov');
+            (file.name.toLowerCase().endsWith('.mp4') ||
+                file.name.toLowerCase().endsWith('.mov'));
 
         setState(() {
           selectedMedia = file;
@@ -1225,73 +1226,646 @@ class VideosPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+// ---------------- PROFILE ----------------
+
+class ProfilePage extends StatefulWidget {
   final List<IranaPost> posts;
 
   const ProfilePage({super.key, required this.posts});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final ImagePicker picker = ImagePicker();
+
+  String profileName = 'کاربر ایرانا';
+  String username = 'irana_user';
+  String bio = 'به خانواده بزرگ ایرانا خوش آمدید 💜';
+  String avatarPath = '';
+
+  bool loadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfile();
+  }
+
+  Future<void> loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (!mounted) return;
+
+    setState(() {
+      profileName =
+          prefs.getString('irana_profile_name') ?? 'کاربر ایرانا';
+      username =
+          prefs.getString('irana_profile_username') ?? 'irana_user';
+      bio = prefs.getString('irana_profile_bio') ??
+          'به خانواده بزرگ ایرانا خوش آمدید 💜';
+      avatarPath = prefs.getString('irana_profile_avatar') ?? '';
+      loadingProfile = false;
+    });
+  }
+
+  Future<void> saveProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('irana_profile_name', profileName);
+    await prefs.setString('irana_profile_username', username);
+    await prefs.setString('irana_profile_bio', bio);
+    await prefs.setString('irana_profile_avatar', avatarPath);
+  }
+
+  Future<void> editProfile() async {
+    final nameController =
+        TextEditingController(text: profileName);
+    final usernameController =
+        TextEditingController(text: username);
+    final bioController = TextEditingController(text: bio);
+
+    try {
+      final result = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: const Text('ویرایش پروفایل'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'نام نمایشی',
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'نام کاربری',
+                        prefixIcon: Icon(Icons.alternate_email),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: bioController,
+                      maxLines: 3,
+                      maxLength: 150,
+                      decoration: const InputDecoration(
+                        labelText: 'بیوگرافی',
+                        prefixIcon: Icon(Icons.edit_note),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pop(dialogContext, false),
+                  child: const Text('انصراف'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: iranaPurple,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    if (nameController.text.trim().isEmpty ||
+                        usernameController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'نام و نام کاربری نمی‌توانند خالی باشند',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.pop(dialogContext, true);
+                  },
+                  child: const Text('ذخیره تغییرات'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (result == true && mounted) {
+        setState(() {
+          profileName = nameController.text.trim();
+          username = usernameController.text
+              .trim()
+              .replaceAll('@', '');
+          bio = bioController.text.trim();
+        });
+
+        await saveProfile();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('پروفایل با موفقیت ذخیره شد 💜'),
+            ),
+          );
+        }
+      }
+    } finally {
+      nameController.dispose();
+      usernameController.dispose();
+      bioController.dispose();
+    }
+  }
+
+  Future<void> changeAvatar() async {
+    try {
+      final file = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (file == null) return;
+
+      final directory = await getApplicationDocumentsDirectory();
+      final folder = Directory('${directory.path}/irana_media');
+
+      if (!await folder.exists()) {
+        await folder.create(recursive: true);
+      }
+
+      final extension = file.name.contains('.')
+          ? file.name.split('.').last
+          : 'jpg';
+
+      final destination =
+          '${folder.path}/profile_${DateTime.now().microsecondsSinceEpoch}.$extension';
+
+      await File(file.path).copy(destination);
+
+      if (!mounted) return;
+
+      setState(() {
+        avatarPath = destination;
+      });
+
+      await saveProfile();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('عکس پروفایل تغییر کرد 💜'),
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تغییر عکس پروفایل انجام نشد'),
+        ),
+      );
+    }
+  }
+
+  ImageProvider? get avatarImage {
+    if (avatarPath.isNotEmpty && File(avatarPath).existsSync()) {
+      return FileImage(File(avatarPath));
+    }
+    return null;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const SizedBox(height: 20),
-        const CircleAvatar(
-          radius: 48,
-          backgroundColor: Color(0xFFE9DDF7),
-          child: Icon(
-            Icons.person,
-            size: 55,
-            color: iranaPurple,
-          ),
-        ),
-        const SizedBox(height: 14),
-        const Center(
-          child: Text(
-            'کاربر ایرانا',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    if (loadingProfile) {
+      return const Center(
+        child: CircularProgressIndicator(color: iranaPurple),
+      );
+    }
+
+    final image = avatarImage;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          // هدر پروفایل
+          Container(
+            height: 145,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Color(0xFF7139A8),
+                  Color(0xFF9B55C5),
+                  Color(0xFFE84B91),
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'IRANA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 29,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      'پروفایل من',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                Icon(
+                  Icons.auto_awesome,
+                  color: iranaGold,
+                  size: 55,
+                ),
+              ],
             ),
           ),
-        ),
-        const Center(
-          child: Text(
-            '@irana_user',
-            style: TextStyle(color: Colors.grey),
+
+          Transform.translate(
+            offset: const Offset(0, -43),
+            child: Column(
+              children: [
+                // عکس پروفایل
+                GestureDetector(
+                  onTap: changeAvatar,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: iranaGold,
+                    ),
+                    child: CircleAvatar(
+                      radius: 52,
+                      backgroundColor: const Color(0xFFE9DDF7),
+                      backgroundImage: image,
+                      child: image == null
+                          ? const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: iranaPurple,
+                            )
+                          : null,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 7),
+                TextButton.icon(
+                  onPressed: changeAvatar,
+                  icon: const Icon(
+                    Icons.camera_alt_outlined,
+                    size: 18,
+                  ),
+                  label: const Text('تغییر عکس پروفایل'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: iranaPurple,
+                  ),
+                ),
+                const SizedBox(height: 4),
+
+                // نام و نام کاربری
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      profileName,
+                      style: const TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Icon(
+                      Icons.verified,
+                      color: iranaPurple,
+                      size: 19,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '@$username',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // آمار
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ProfileStat(
+                        number: widget.posts.length.toString(),
+                        label: 'پست',
+                      ),
+                      const ProfileStat(
+                        number: '0',
+                        label: 'دنبال‌کننده',
+                      ),
+                      const ProfileStat(
+                        number: '0',
+                        label: 'دنبال‌شونده',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // دکمه‌های پروفایل
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: editProfile,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('ویرایش پروفایل'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: iranaPurple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 13,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'اشتراک‌گذاری پروفایل در نسخه بعدی فعال می‌شود',
+                              ),
+                            ),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: iranaPurple,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 13,
+                            horizontal: 14,
+                          ),
+                          side: const BorderSide(color: iranaPurple),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Icon(Icons.share_outlined),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // بیوگرافی
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 18),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Text(
+                    bio.isEmpty ? 'هنوز بیوگرافی ثبت نشده است' : bio,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // هایلایت استوری‌ها
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'هایلایت‌ها',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 90,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    children: const [
+                      _ProfileHighlight(
+                        icon: Icons.add,
+                        title: 'جدید',
+                        isNew: true,
+                      ),
+                      _ProfileHighlight(
+                        icon: Icons.photo_library_outlined,
+                        title: 'لحظه‌ها',
+                      ),
+                      _ProfileHighlight(
+                        icon: Icons.favorite_border,
+                        title: 'علاقه‌ها',
+                      ),
+                      _ProfileHighlight(
+                        icon: Icons.star_border,
+                        title: 'منتخب',
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+                const Divider(height: 1),
+
+                // عنوان بخش پست‌ها
+                const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 15,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.grid_on,
+                        color: iranaPurple,
+                      ),
+                      SizedBox(width: 9),
+                      Text(
+                        'پست‌های من',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (widget.posts.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 35),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.photo_library_outlined,
+                          size: 55,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: 10),
+                        Text('هنوز پستی منتشر نکرده‌ای'),
+                      ],
+                    ),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(2),
+                    itemCount: widget.posts.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 2,
+                      mainAxisSpacing: 2,
+                    ),
+                    itemBuilder: (context, index) {
+                      final post = widget.posts[index];
+                      final file = File(post.imagePath);
+
+                      if (!file.existsSync()) {
+                        return Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.broken_image),
+                        );
+                      }
+
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          post.isVideo
+                              ? Container(
+                                  color: Colors.black87,
+                                  child: const Icon(
+                                    Icons.play_circle_fill,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                )
+                              : Image.file(
+                                  file,
+                                  fit: BoxFit.cover,
+                                ),
+                          if (post.isVideo)
+                            const Positioned(
+                              top: 5,
+                              left: 5,
+                              child: Icon(
+                                Icons.play_arrow,
+                                color: Colors.white,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                const SizedBox(height: 25),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 25),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ProfileStat(
-              number: posts.length.toString(),
-              label: 'پست',
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHighlight extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool isNew;
+
+  const _ProfileHighlight({
+    required this.icon,
+    required this.title,
+    this.isNew = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 75,
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      child: Column(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isNew
+                  ? const Color(0xFFEDE2F7)
+                  : Colors.white,
+              border: Border.all(
+                color: isNew ? iranaPurple : iranaGold,
+                width: 2,
+              ),
             ),
-            const ProfileStat(
-              number: '0',
-              label: 'دنبال‌کننده',
+            child: Icon(
+              icon,
+              color: iranaPurple,
+              size: 27,
             ),
-            const ProfileStat(
-              number: '0',
-              label: 'دنبال‌شونده',
-            ),
-          ],
-        ),
-        const SizedBox(height: 25),
-        OutlinedButton(
-          onPressed: () {},
-          child: const Text('ویرایش پروفایل'),
-        ),
-        const SizedBox(height: 20),
-        const Divider(),
-        const Center(
-          child: Text(
-            'به خانواده بزرگ ایرانا خوش آمدید 💜',
           ),
-        ),
-      ],
+          const SizedBox(height: 5),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }
