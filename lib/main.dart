@@ -43,6 +43,7 @@ class IranaPost {
   final String imagePath;
   final DateTime date;
   final bool liked;
+  final bool isVideo;
 
   IranaPost({
     required this.id,
@@ -51,6 +52,7 @@ class IranaPost {
     required this.imagePath,
     required this.date,
     this.liked = false,
+    this.isVideo = false,
   });
 
   IranaPost copyWith({bool? liked}) {
@@ -61,6 +63,7 @@ class IranaPost {
       imagePath: imagePath,
       date: date,
       liked: liked ?? this.liked,
+      isVideo: isVideo,
     );
   }
 
@@ -71,16 +74,18 @@ class IranaPost {
     'imagePath': imagePath,
     'date': date.toIso8601String(),
     'liked': liked,
+    'isVideo': isVideo,
   };
 
   factory IranaPost.fromJson(Map<String, dynamic> json) {
     return IranaPost(
       id: json['id'],
       username: json['username'],
-      caption: json['caption'],
+      caption: json['caption'] ?? '',
       imagePath: json['imagePath'],
       date: DateTime.parse(json['date']),
       liked: json['liked'] ?? false,
+      isVideo: json['isVideo'] ?? false,
     );
   }
 }
@@ -222,6 +227,7 @@ class _IranaHomeState extends State<IranaHome> {
 
   Future<String> copyMedia(XFile file) async {
     final folder = await mediaDirectory;
+
     final extension = file.name.contains('.')
         ? file.name.split('.').last
         : 'jpg';
@@ -233,6 +239,15 @@ class _IranaHomeState extends State<IranaHome> {
     return destination;
   }
 
+  bool isVideoFile(XFile file) {
+    final mime = file.mimeType ?? '';
+
+    return mime.startsWith('video/') ||
+        file.name.toLowerCase().endsWith('.mp4') ||
+        file.name.toLowerCase().endsWith('.mov') ||
+        file.name.toLowerCase().endsWith('.m4v');
+  }
+
   Future<void> addStory() async {
     try {
       final file = await picker.pickMedia();
@@ -241,15 +256,11 @@ class _IranaHomeState extends State<IranaHome> {
 
       final path = await copyMedia(file);
 
-      final isVideo = file.mimeType?.startsWith('video/') ??
-          file.name.toLowerCase().endsWith('.mp4') ||
-          file.name.toLowerCase().endsWith('.mov');
-
       final story = IranaStory(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         username: 'irana_user',
         filePath: path,
-        isVideo: isVideo,
+        isVideo: isVideoFile(file),
         createdAt: DateTime.now(),
       );
 
@@ -264,12 +275,16 @@ class _IranaHomeState extends State<IranaHome> {
           const SnackBar(content: Text('استوری منتشر شد 💜')),
         );
       }
-    } catch (e) {
+    } catch (_) {
       showError('انتشار استوری انجام نشد');
     }
   }
 
-  Future<void> addPost(XFile file, String caption) async {
+  Future<void> addPost(
+    XFile file,
+    String caption,
+    bool video,
+  ) async {
     try {
       final path = await copyMedia(file);
 
@@ -279,6 +294,7 @@ class _IranaHomeState extends State<IranaHome> {
         caption: caption,
         imagePath: path,
         date: DateTime.now(),
+        isVideo: video,
       );
 
       setState(() {
@@ -293,7 +309,7 @@ class _IranaHomeState extends State<IranaHome> {
           const SnackBar(content: Text('پست با موفقیت منتشر شد 💜')),
         );
       }
-    } catch (e) {
+    } catch (_) {
       showError('انتشار پست انجام نشد');
     }
   }
@@ -324,6 +340,18 @@ class _IranaHomeState extends State<IranaHome> {
       context,
       MaterialPageRoute(
         builder: (_) => StoryViewer(story: story),
+      ),
+    );
+  }
+
+  void openVideo(IranaPost post) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MediaVideoViewer(
+          path: post.imagePath,
+          title: post.username,
+        ),
       ),
     );
   }
@@ -380,10 +408,16 @@ class _IranaHomeState extends State<IranaHome> {
               onAddStory: addStory,
               onOpenStory: openStory,
               onLike: toggleLike,
+              onOpenVideo: openVideo,
             ),
             SearchPage(posts: posts),
             CreatePage(onPublish: addPost),
-            VideosPage(stories: stories),
+            VideosPage(
+              stories: stories,
+              posts: posts,
+              onOpenStory: openStory,
+              onOpenVideo: openVideo,
+            ),
             ProfilePage(posts: posts),
           ],
         ),
@@ -419,6 +453,7 @@ class FeedPage extends StatelessWidget {
   final VoidCallback onAddStory;
   final Function(IranaStory) onOpenStory;
   final Function(String) onLike;
+  final Function(IranaPost) onOpenVideo;
 
   const FeedPage({
     super.key,
@@ -427,6 +462,7 @@ class FeedPage extends StatelessWidget {
     required this.onAddStory,
     required this.onOpenStory,
     required this.onLike,
+    required this.onOpenVideo,
   });
 
   @override
@@ -487,6 +523,7 @@ class FeedPage extends StatelessWidget {
           (post) => PostCard(
             post: post,
             onLike: () => onLike(post.id),
+            onOpenVideo: () => onOpenVideo(post),
           ),
         ),
       ],
@@ -665,14 +702,111 @@ class _StoryViewerState extends State<StoryViewer> {
   }
 }
 
+class MediaVideoViewer extends StatefulWidget {
+  final String path;
+  final String title;
+
+  const MediaVideoViewer({
+    super.key,
+    required this.path,
+    required this.title,
+  });
+
+  @override
+  State<MediaVideoViewer> createState() => _MediaVideoViewerState();
+}
+
+class _MediaVideoViewerState extends State<MediaVideoViewer> {
+  late final VideoPlayerController controller;
+  late final Future<void> initializeFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = VideoPlayerController.file(File(widget.path));
+
+    initializeFuture = controller.initialize().then((_) {
+      controller.setLooping(true);
+      controller.play();
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: FutureBuilder<void>(
+          future: initializeFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const CircularProgressIndicator(
+                color: Colors.white,
+              );
+            }
+
+            if (snapshot.hasError) {
+              return const Text(
+                'پخش ویدئو امکان‌پذیر نیست',
+                style: TextStyle(color: Colors.white),
+              );
+            }
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AspectRatio(
+                  aspectRatio: controller.value.aspectRatio,
+                  child: VideoPlayer(controller),
+                ),
+                IconButton(
+                  color: Colors.white,
+                  iconSize: 45,
+                  onPressed: () {
+                    setState(() {
+                      if (controller.value.isPlaying) {
+                        controller.pause();
+                      } else {
+                        controller.play();
+                      }
+                    });
+                  },
+                  icon: Icon(
+                    controller.value.isPlaying
+                        ? Icons.pause
+                        : Icons.play_arrow,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class PostCard extends StatelessWidget {
   final IranaPost post;
   final VoidCallback onLike;
+  final VoidCallback onOpenVideo;
 
   const PostCard({
     super.key,
     required this.post,
     required this.onLike,
+    required this.onOpenVideo,
   });
 
   @override
@@ -702,12 +836,28 @@ class PostCard extends StatelessWidget {
             trailing: const Icon(Icons.more_vert),
           ),
           if (file.existsSync())
-            Image.file(
-              file,
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
-            ),
+            post.isVideo
+                ? GestureDetector(
+                    onTap: onOpenVideo,
+                    child: Container(
+                      width: double.infinity,
+                      height: 300,
+                      color: Colors.black,
+                      child: const Center(
+                        child: Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.white,
+                          size: 75,
+                        ),
+                      ),
+                    ),
+                  )
+                : Image.file(
+                    file,
+                    width: double.infinity,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 12,
@@ -828,7 +978,7 @@ class _SearchPageState extends State<SearchPage> {
 }
 
 class CreatePage extends StatefulWidget {
-  final Future<void> Function(XFile, String) onPublish;
+  final Future<void> Function(XFile, String, bool) onPublish;
 
   const CreatePage({super.key, required this.onPublish});
 
@@ -838,29 +988,41 @@ class CreatePage extends StatefulWidget {
 
 class _CreatePageState extends State<CreatePage> {
   final ImagePicker picker = ImagePicker();
+
   final TextEditingController captionController =
       TextEditingController();
 
-  XFile? selectedImage;
+  XFile? selectedMedia;
+  bool selectedVideo = false;
   bool publishing = false;
 
-  Future<void> chooseImage() async {
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 90,
-    );
+  Future<void> chooseMedia() async {
+    try {
+      final file = await picker.pickMedia();
 
-    if (image != null) {
-      setState(() {
-        selectedImage = image;
-      });
+      if (file != null) {
+        final isVideo = file.mimeType?.startsWith('video/') ??
+            file.name.toLowerCase().endsWith('.mp4') ||
+            file.name.toLowerCase().endsWith('.mov');
+
+        setState(() {
+          selectedMedia = file;
+          selectedVideo = isVideo;
+        });
+      }
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('انتخاب فایل انجام نشد')),
+      );
     }
   }
 
   Future<void> publish() async {
-    if (selectedImage == null) {
+    if (selectedMedia == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ابتدا یک عکس انتخاب کن')),
+        const SnackBar(content: Text('ابتدا عکس یا ویدئو انتخاب کن')),
       );
       return;
     }
@@ -871,15 +1033,17 @@ class _CreatePageState extends State<CreatePage> {
 
     try {
       await widget.onPublish(
-        selectedImage!,
+        selectedMedia!,
         captionController.text.trim(),
+        selectedVideo,
       );
 
       captionController.clear();
 
       if (mounted) {
         setState(() {
-          selectedImage = null;
+          selectedMedia = null;
+          selectedVideo = false;
         });
       }
     } finally {
@@ -911,7 +1075,7 @@ class _CreatePageState extends State<CreatePage> {
         ),
         const SizedBox(height: 20),
         GestureDetector(
-          onTap: chooseImage,
+          onTap: chooseMedia,
           child: Container(
             height: 260,
             decoration: BoxDecoration(
@@ -919,7 +1083,7 @@ class _CreatePageState extends State<CreatePage> {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: iranaPurple.withOpacity(0.3)),
             ),
-            child: selectedImage == null
+            child: selectedMedia == null
                 ? const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -929,15 +1093,26 @@ class _CreatePageState extends State<CreatePage> {
                         color: iranaPurple,
                       ),
                       SizedBox(height: 12),
-                      Text('انتخاب عکس از گالری'),
+                      Text('انتخاب عکس یا ویدئو از گالری'),
                     ],
                   )
                 : ClipRRect(
                     borderRadius: BorderRadius.circular(18),
-                    child: Image.file(
-                      File(selectedImage!.path),
-                      fit: BoxFit.cover,
-                    ),
+                    child: selectedVideo
+                        ? const ColoredBox(
+                            color: Colors.black,
+                            child: Center(
+                              child: Icon(
+                                Icons.play_circle_fill,
+                                size: 80,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : Image.file(
+                            File(selectedMedia!.path),
+                            fit: BoxFit.cover,
+                          ),
                   ),
           ),
         ),
@@ -975,57 +1150,78 @@ class _CreatePageState extends State<CreatePage> {
 
 class VideosPage extends StatelessWidget {
   final List<IranaStory> stories;
+  final List<IranaPost> posts;
+  final Function(IranaStory) onOpenStory;
+  final Function(IranaPost) onOpenVideo;
 
-  const VideosPage({super.key, required this.stories});
+  const VideosPage({
+    super.key,
+    required this.stories,
+    required this.posts,
+    required this.onOpenStory,
+    required this.onOpenVideo,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final videos = stories.where((s) => s.isVideo).toList();
+    final videos = posts.where((p) => p.isVideo).toList();
+    final storyVideos = stories.where((s) => s.isVideo).toList();
 
-    return videos.isEmpty
-        ? const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.play_circle_outline,
-                  size: 90,
-                  color: iranaPurple,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'ویدئوهای ایرانا',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text('هنوز ویدئویی منتشر نشده است'),
-              ],
+    if (videos.isEmpty && storyVideos.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.play_circle_outline,
+              size: 90,
+              color: iranaPurple,
             ),
-          )
-        : ListView(
-            children: videos.map((video) {
-              return ListTile(
-                leading: const Icon(
-                  Icons.play_circle_fill,
-                  color: iranaPurple,
-                  size: 40,
-                ),
-                title: Text(video.username),
-                subtitle: const Text('ویدئوی استوری'),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => StoryViewer(story: video),
-                    ),
-                  );
-                },
-              );
-            }).toList(),
+            SizedBox(height: 16),
+            Text(
+              'ویدئوهای ایرانا',
+              style: TextStyle(
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text('هنوز ویدئویی منتشر نشده است'),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      children: [
+        ...videos.map((video) {
+          return ListTile(
+            leading: const Icon(
+              Icons.play_circle_fill,
+              color: iranaPurple,
+              size: 40,
+            ),
+            title: Text(video.username),
+            subtitle: Text(video.caption.isEmpty
+                ? 'ویدئوی ایرانا'
+                : video.caption),
+            onTap: () => onOpenVideo(video),
           );
+        }),
+        ...storyVideos.map((video) {
+          return ListTile(
+            leading: const Icon(
+              Icons.video_library,
+              color: iranaPink,
+              size: 40,
+            ),
+            title: Text(video.username),
+            subtitle: const Text('ویدئوی استوری'),
+            onTap: () => onOpenStory(video),
+          );
+        }),
+      ],
+    );
   }
 }
 
