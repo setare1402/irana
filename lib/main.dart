@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,6 +47,7 @@ class IranaPost {
   final DateTime date;
   final bool liked;
   final bool isVideo;
+  final bool commentsEnabled;
 
   IranaPost({
     required this.id,
@@ -55,16 +57,23 @@ class IranaPost {
     required this.date,
     this.liked = false,
     this.isVideo = false,
+    this.commentsEnabled = true,
   });
 
-  IranaPost copyWith({bool? liked}) => IranaPost(
+  IranaPost copyWith({
+    bool? liked,
+    String? caption,
+    bool? commentsEnabled,
+  }) =>
+      IranaPost(
         id: id,
         username: username,
-        caption: caption,
+        caption: caption ?? this.caption,
         imagePath: imagePath,
         date: date,
         liked: liked ?? this.liked,
         isVideo: isVideo,
+        commentsEnabled: commentsEnabled ?? this.commentsEnabled,
       );
 
   Map<String, dynamic> toJson() => {
@@ -75,6 +84,7 @@ class IranaPost {
         'date': date.toIso8601String(),
         'liked': liked,
         'isVideo': isVideo,
+        'commentsEnabled': commentsEnabled,
       };
 
   factory IranaPost.fromJson(Map<String, dynamic> j) => IranaPost(
@@ -85,6 +95,7 @@ class IranaPost {
         date: DateTime.parse(j['date']),
         liked: j['liked'] ?? false,
         isVideo: j['isVideo'] ?? false,
+        commentsEnabled: j['commentsEnabled'] ?? true,
       );
 }
 
@@ -204,6 +215,8 @@ class _IranaHomeState extends State<IranaHome> {
   List<IranaComment> comments = [];
   List<IranaForward> forwards = [];
   List<String> savedPostIds = [];
+  List<String> reportedPostIds = [];
+  List<String> hiddenPostIds = [];
 
   final ImagePicker picker = ImagePicker();
 
@@ -274,6 +287,9 @@ class _IranaHomeState extends State<IranaHome> {
       }
 
       savedPostIds = prefs.getStringList('irana_saved_posts') ?? [];
+      reportedPostIds =
+          prefs.getStringList('irana_reported_posts') ?? [];
+      hiddenPostIds = prefs.getStringList('irana_hidden_posts') ?? [];
     } catch (_) {}
 
     await saveData();
@@ -282,6 +298,7 @@ class _IranaHomeState extends State<IranaHome> {
 
   Future<void> saveData() async {
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.setString(
       'irana_posts',
       jsonEncode(posts.map((e) => e.toJson()).toList()),
@@ -298,7 +315,10 @@ class _IranaHomeState extends State<IranaHome> {
       'irana_forwards',
       jsonEncode(forwards.map((e) => e.toJson()).toList()),
     );
+
     await prefs.setStringList('irana_saved_posts', savedPostIds);
+    await prefs.setStringList('irana_reported_posts', reportedPostIds);
+    await prefs.setStringList('irana_hidden_posts', hiddenPostIds);
   }
 
   Future<String> copyMedia(XFile file) async {
@@ -406,6 +426,353 @@ class _IranaHomeState extends State<IranaHome> {
     );
   }
 
+  // ---------------- POST MENU ACTIONS ----------------
+
+  Future<void> editPost(IranaPost post) async {
+    final controller = TextEditingController(text: post.caption);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('ویرایش پست'),
+          content: TextField(
+            controller: controller,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              hintText: 'متن پست را ویرایش کن',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, controller.text.trim()),
+              child: const Text('ذخیره'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    controller.dispose();
+    if (result == null) return;
+
+    setState(() {
+      posts = posts
+          .map((p) => p.id == post.id ? p.copyWith(caption: result) : p)
+          .toList();
+    });
+
+    await saveData();
+    showMessage('پست ویرایش شد');
+  }
+
+  Future<void> deletePost(IranaPost post) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('حذف پست'),
+          content: const Text('آیا مطمئنی می‌خواهی این پست حذف شود؟'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('بله، حذف شود'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      posts.removeWhere((p) => p.id == post.id);
+      comments.removeWhere((c) => c.postId == post.id);
+      forwards.removeWhere((f) => f.postId == post.id);
+      savedPostIds.remove(post.id);
+      hiddenPostIds.remove(post.id);
+      reportedPostIds.remove(post.id);
+    });
+
+    await saveData();
+    showMessage('پست حذف شد');
+  }
+
+  Future<void> toggleComments(IranaPost post) async {
+    setState(() {
+      posts = posts
+          .map((p) => p.id == post.id
+              ? p.copyWith(commentsEnabled: !p.commentsEnabled)
+              : p)
+          .toList();
+    });
+
+    await saveData();
+
+    final updated = posts.firstWhere((p) => p.id == post.id);
+    showMessage(
+      updated.commentsEnabled ? 'نظرات باز شدند' : 'نظرات بسته شدند',
+    );
+  }
+
+  Future<void> manageComments(IranaPost post) async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: StatefulBuilder(
+          builder: (context, refresh) {
+            final postComments =
+                comments.where((c) => c.postId == post.id).toList();
+
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      'مدیریت نظرات',
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: postComments.isEmpty
+                        ? const Center(child: Text('نظری ثبت نشده است'))
+                        : ListView.builder(
+                            itemCount: postComments.length,
+                            itemBuilder: (context, index) {
+                              final comment = postComments[index];
+
+                              return ListTile(
+                                title: Text(comment.username),
+                                subtitle: Text(comment.text),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () async {
+                                    setState(() {
+                                      comments.removeWhere(
+                                        (c) => c.id == comment.id,
+                                      );
+                                    });
+                                    await saveData();
+                                    refresh(() {});
+                                    showMessage('نظر حذف شد');
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> reportPost(IranaPost post) async {
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SimpleDialog(
+          title: const Text('گزارش پست'),
+          children: [
+            for (final item in [
+              'اسپم',
+              'محتوای نامناسب',
+              'مزاحمت',
+              'سایر',
+            ])
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(dialogContext, item),
+                child: Text(item),
+              ),
+          ],
+        ),
+      ),
+    );
+
+    if (reason == null) return;
+
+    if (!reportedPostIds.contains(post.id)) {
+      reportedPostIds.add(post.id);
+      await saveData();
+    }
+
+    showMessage('گزارش با موضوع «$reason» در دستگاه ثبت شد');
+  }
+
+  Future<void> notInterested(IranaPost post) async {
+    if (!hiddenPostIds.contains(post.id)) {
+      setState(() => hiddenPostIds.add(post.id));
+      await saveData();
+    }
+
+    showMessage('این پست دیگر در صفحه خانه نمایش داده نمی‌شود');
+  }
+
+  Future<void> copyPostLink(IranaPost post) async {
+    await Clipboard.setData(
+      ClipboardData(text: 'irana://post/${post.id}'),
+    );
+    showMessage('شناسه لینک محلی پست کپی شد');
+  }
+
+  Future<void> sharePost(IranaPost post) async {
+    await Clipboard.setData(
+      ClipboardData(
+        text: '${post.caption}\nirana://post/${post.id}',
+      ),
+    );
+    showMessage(
+      'متن و لینک محلی کپی شد؛ اشتراک‌گذاری عمومی هنوز فعال نیست',
+    );
+  }
+
+  Future<void> showPostMenu(IranaPost post) async {
+    final isOwner = post.username == 'irana_user';
+
+    final options = <Map<String, dynamic>>[
+      if (isOwner)
+        {
+          'title': 'ویرایش پست',
+          'icon': Icons.edit_outlined,
+          'action': 'edit',
+        },
+      if (isOwner)
+        {
+          'title': 'حذف پست',
+          'icon': Icons.delete_outline,
+          'action': 'delete',
+        },
+      {
+        'title': savedPostIds.contains(post.id)
+            ? 'حذف از ذخیره‌شده‌ها'
+            : 'ذخیره پست',
+        'icon': Icons.bookmark_border,
+        'action': 'save',
+      },
+      {
+        'title': 'کپی لینک',
+        'icon': Icons.link,
+        'action': 'copy',
+      },
+      {
+        'title': 'اشتراک‌گذاری',
+        'icon': Icons.share_outlined,
+        'action': 'share',
+      },
+      if (isOwner)
+        {
+          'title': post.commentsEnabled ? 'بستن نظرات' : 'بازکردن نظرات',
+          'icon': Icons.comment_outlined,
+          'action': 'comments',
+        },
+      if (isOwner)
+        {
+          'title': 'مدیریت نظرات',
+          'icon': Icons.comment_bank_outlined,
+          'action': 'manage',
+        },
+      if (!isOwner)
+        {
+          'title': 'گزارش پست',
+          'icon': Icons.flag_outlined,
+          'action': 'report',
+        },
+      if (!isOwner)
+        {
+          'title': 'علاقه‌مند نیستم',
+          'icon': Icons.visibility_off_outlined,
+          'action': 'hide',
+        },
+    ];
+
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: options.map((option) {
+              return ListTile(
+                leading: Icon(option['icon'] as IconData),
+                title: Text(option['title'] as String),
+                onTap: () => Navigator.pop(
+                  sheetContext,
+                  option['action'] as String,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case 'edit':
+        await editPost(post);
+        break;
+      case 'delete':
+        await deletePost(post);
+        break;
+      case 'save':
+        await toggleSave(post.id);
+        break;
+      case 'copy':
+        await copyPostLink(post);
+        break;
+      case 'share':
+        await sharePost(post);
+        break;
+      case 'comments':
+        await toggleComments(post);
+        break;
+      case 'manage':
+        await manageComments(post);
+        break;
+      case 'report':
+        await reportPost(post);
+        break;
+      case 'hide':
+        await notInterested(post);
+        break;
+    }
+  }
+
   void openStory(IranaStory story) {
     Navigator.push(
       context,
@@ -438,6 +805,11 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> openComments(IranaPost post) async {
+    if (!post.commentsEnabled) {
+      showMessage('نظرهای این پست بسته است');
+      return;
+    }
+
     final controller = TextEditingController();
 
     await showModalBottomSheet(
@@ -602,7 +974,6 @@ class _IranaHomeState extends State<IranaHome> {
     );
 
     receiverController.dispose();
-
     if (receiver == null || receiver.isEmpty) return;
 
     setState(() {
@@ -647,11 +1018,13 @@ class _IranaHomeState extends State<IranaHome> {
           ),
           actions: [
             IconButton(
-              onPressed: () => showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
+              onPressed: () =>
+                  showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
               icon: const Icon(Icons.favorite_border, color: Colors.black87),
             ),
             IconButton(
-              onPressed: () => showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
+              onPressed: () =>
+                  showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
               icon: const Icon(Icons.send_outlined, color: Colors.black87),
             ),
             const SizedBox(width: 5),
@@ -664,6 +1037,7 @@ class _IranaHomeState extends State<IranaHome> {
               stories: stories,
               posts: posts,
               savedPostIds: savedPostIds,
+              hiddenPostIds: hiddenPostIds,
               onAddStory: addStory,
               onOpenStory: openStory,
               onLike: toggleLike,
@@ -672,6 +1046,7 @@ class _IranaHomeState extends State<IranaHome> {
               onComments: openComments,
               onForward: forwardPost,
               onSave: toggleSave,
+              onPostMenu: showPostMenu,
             ),
             SearchPage(posts: posts),
             CreatePage(onPublish: addPost),
@@ -711,6 +1086,7 @@ class FeedPage extends StatelessWidget {
   final List<IranaStory> stories;
   final List<IranaPost> posts;
   final List<String> savedPostIds;
+  final List<String> hiddenPostIds;
   final VoidCallback onAddStory;
   final Function(IranaStory) onOpenStory;
   final Function(String) onLike;
@@ -719,12 +1095,14 @@ class FeedPage extends StatelessWidget {
   final Function(IranaPost) onComments;
   final Function(IranaPost) onForward;
   final Function(String) onSave;
+  final Function(IranaPost) onPostMenu;
 
   const FeedPage({
     super.key,
     required this.stories,
     required this.posts,
     required this.savedPostIds,
+    required this.hiddenPostIds,
     required this.onAddStory,
     required this.onOpenStory,
     required this.onLike,
@@ -733,10 +1111,14 @@ class FeedPage extends StatelessWidget {
     required this.onComments,
     required this.onForward,
     required this.onSave,
+    required this.onPostMenu,
   });
 
   @override
   Widget build(BuildContext context) {
+    final visiblePosts =
+        posts.where((p) => !hiddenPostIds.contains(p.id)).toList();
+
     return ListView(
       children: [
         const SizedBox(height: 12),
@@ -772,7 +1154,7 @@ class FeedPage extends StatelessWidget {
           ),
         ),
         const Divider(height: 20),
-        if (posts.isEmpty)
+        if (visiblePosts.isEmpty)
           const Padding(
             padding: EdgeInsets.all(35),
             child: Center(
@@ -783,7 +1165,7 @@ class FeedPage extends StatelessWidget {
               ),
             ),
           ),
-        ...posts.map(
+        ...visiblePosts.map(
           (post) => PostCard(
             post: post,
             isSaved: savedPostIds.contains(post.id),
@@ -793,6 +1175,7 @@ class FeedPage extends StatelessWidget {
             onComments: () => onComments(post),
             onForward: () => onForward(post),
             onSave: () => onSave(post.id),
+            onMenu: () => onPostMenu(post),
           ),
         ),
       ],
@@ -839,12 +1222,18 @@ class StoryItem extends StatelessWidget {
               child: own
                   ? const Icon(Icons.add, color: iranaPurple, size: 28)
                   : isVideo
-                      ? const Icon(Icons.play_arrow,
-                          color: iranaPurple, size: 32)
+                      ? const Icon(
+                          Icons.play_arrow,
+                          color: iranaPurple,
+                          size: 32,
+                        )
                       : hasFile
                           ? null
-                          : const Icon(Icons.person,
-                              color: Colors.grey, size: 32),
+                          : const Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
             ),
           ),
           const SizedBox(height: 5),
@@ -942,8 +1331,10 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
   }
 
   String timeText(Duration duration) {
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final minutes =
+        duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds =
+        duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }
 
@@ -977,9 +1368,8 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AspectRatio(
-                      aspectRatio: value.aspectRatio == 0
-                          ? 16 / 9
-                          : value.aspectRatio,
+                      aspectRatio:
+                          value.aspectRatio == 0 ? 16 / 9 : value.aspectRatio,
                       child: VideoPlayer(controller),
                     ),
                     Padding(
@@ -1018,7 +1408,9 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
                             }
                           },
                           icon: Icon(
-                            value.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                            value.isPlaying
+                                ? Icons.pause_circle
+                                : Icons.play_circle,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -1148,6 +1540,7 @@ class PostCard extends StatelessWidget {
   final VoidCallback onComments;
   final VoidCallback onForward;
   final VoidCallback onSave;
+  final VoidCallback onMenu;
 
   const PostCard({
     super.key,
@@ -1159,6 +1552,7 @@ class PostCard extends StatelessWidget {
     required this.onComments,
     required this.onForward,
     required this.onSave,
+    required this.onMenu,
   });
 
   @override
@@ -1185,7 +1579,11 @@ class PostCard extends StatelessWidget {
                 fontSize: 14,
               ),
             ),
-            trailing: const Icon(Icons.more_vert),
+            trailing: IconButton(
+              tooltip: 'گزینه‌های پست',
+              onPressed: onMenu,
+              icon: const Icon(Icons.more_vert),
+            ),
           ),
           if (file.existsSync())
             GestureDetector(
@@ -1227,7 +1625,10 @@ class PostCard extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: onComments,
-                  icon: const Icon(Icons.mode_comment_outlined),
+                  icon: Icon(
+                    Icons.mode_comment_outlined,
+                    color: post.commentsEnabled ? Colors.black87 : Colors.grey,
+                  ),
                 ),
                 IconButton(
                   onPressed: onForward,
@@ -2170,39 +2571,171 @@ class IranaSettingsPage extends StatelessWidget {
   const IranaSettingsPage({super.key});
 
   static const List<IranaMenuItem> menuItems = [
-    IranaMenuItem(title: 'پست کردن هم‌زمان', icon: Icons.dashboard_customize_outlined, description: 'مدیریت انتشار هم‌زمان محتوا در بخش‌های مختلف ایرانا'),
-    IranaMenuItem(title: 'مسدودشده‌ها', icon: Icons.block, description: 'فهرست حساب‌هایی که مسدود کرده‌اید'),
-    IranaMenuItem(title: 'پنهان کردن داستان و پخش زنده', icon: Icons.notifications_off_outlined, description: 'مدیریت افرادی که نمی‌خواهید داستان یا پخش زنده‌شان را ببینید'),
-    IranaMenuItem(title: 'فعالیت در فهرست دوستان', icon: Icons.people_outline, description: 'تنظیم نمایش فعالیت شما برای دوستان'),
-    IranaMenuItem(title: 'پیام‌ها و پاسخ‌ها به داستان', icon: Icons.send_outlined, description: 'تنظیم پیام‌ها و پاسخ‌های دریافتی'),
-    IranaMenuItem(title: 'نشان‌ها و ذکر نام‌ها', icon: Icons.alternate_email, description: 'مدیریت اشاره‌ها و برچسب‌گذاری حساب شما'),
-    IranaMenuItem(title: 'نظرات', icon: Icons.chat_bubble_outline, description: 'مدیریت نظرات و پاسخ‌ها'),
-    IranaMenuItem(title: 'اشتراک‌گذاری', icon: Icons.repeat, description: 'تنظیم نحوه اشتراک‌گذاری محتوا'),
-    IranaMenuItem(title: 'محدودشده‌ها', icon: Icons.person_off_outlined, description: 'مدیریت حساب‌های محدودشده'),
-    IranaMenuItem(title: 'محدود کردن تعاملات', icon: Icons.report_gmailerrorred_outlined, description: 'کنترل تعاملات و ارتباطات ناخواسته'),
-    IranaMenuItem(title: 'کلمات پنهان‌شده', icon: Icons.text_fields, description: 'مدیریت کلمات و عبارت‌های پنهان‌شده'),
-    IranaMenuItem(title: 'دنبال کردن و دعوت از دوستان', icon: Icons.person_add_alt_1, description: 'دعوت دوستان برای پیوستن به ایرانا'),
-    IranaMenuItem(title: 'موارد دلخواه', icon: Icons.star_border, description: 'دسترسی به محتواهای مورد علاقه شما'),
-    IranaMenuItem(title: 'حساب‌های بی‌صداشده', icon: Icons.volume_off_outlined, description: 'مدیریت حساب‌هایی که بی‌صدا کرده‌اید'),
-    IranaMenuItem(title: 'اولویت‌های محتوا', icon: Icons.tune, description: 'تنظیم محتواهایی که بیشتر به شما نمایش داده می‌شوند'),
-    IranaMenuItem(title: 'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها', icon: Icons.favorite_border, description: 'تنظیم نمایش آمار پسندیدن و اشتراک‌گذاری'),
-    IranaMenuItem(title: 'حساب Meta', icon: Icons.all_inclusive, description: 'تنظیمات حساب و خدمات مرتبط با Meta در آینده'),
-    IranaMenuItem(title: 'ذخیره‌شده', icon: Icons.bookmark_border, description: 'محتواهایی که ذخیره کرده‌اید'),
-    IranaMenuItem(title: 'بایگانی', icon: Icons.history, description: 'مشاهده محتواهای بایگانی‌شده'),
-    IranaMenuItem(title: 'فعالیت شما', icon: Icons.monitor_heart_outlined, description: 'بررسی فعالیت‌های انجام‌شده در ایرانا'),
-    IranaMenuItem(title: 'اعلان‌ها', icon: Icons.notifications_none, description: 'مدیریت اعلان‌ها و هشدارهای ایرانا'),
-    IranaMenuItem(title: 'مدیریت زمان', icon: Icons.access_time, description: 'مدیریت مدت‌زمان استفاده از ایرانا'),
-    IranaMenuItem(title: 'Instagram ویژه رایانه لوحی', icon: Icons.tablet_android_outlined, description: 'اطلاعات مربوط به نمایش در دستگاه‌های مختلف'),
-    IranaMenuItem(title: 'Meta Verified', icon: Icons.verified_outlined, description: 'اطلاعات مربوط به تأیید حساب'),
-    IranaMenuItem(title: 'حریم خصوصی حساب', icon: Icons.lock_outline, description: 'مدیریت خصوصی یا عمومی بودن حساب'),
-    IranaMenuItem(title: 'دوستان صمیمی', icon: Icons.stars_outlined, description: 'مدیریت فهرست دوستان صمیمی'),
-    IranaMenuItem(title: 'مجوزهای دستگاه', icon: Icons.phone_android, description: 'دسترسی‌های برنامه به امکانات دستگاه'),
-    IranaMenuItem(title: 'بایگانی کردن و دانلود کردن', icon: Icons.download_outlined, description: 'مدیریت بایگانی و دریافت اطلاعات'),
-    IranaMenuItem(title: 'دسترس‌پذیری', icon: Icons.accessibility_new, description: 'تنظیم امکانات دسترس‌پذیری'),
-    IranaMenuItem(title: 'زبان و ترجمه‌ها', icon: Icons.translate, description: 'تنظیم زبان برنامه و ترجمه محتوا'),
-    IranaMenuItem(title: 'مصرف داده و کیفیت رسانه', icon: Icons.signal_cellular_alt, description: 'تنظیم مصرف اینترنت و کیفیت عکس و ویدئو'),
-    IranaMenuItem(title: 'مجوزهای وب‌سایت', icon: Icons.devices, description: 'مدیریت دسترسی‌های وب‌سایت'),
-    IranaMenuItem(title: 'نظرات در «حساب‌های نه‌چندان...»', icon: Icons.home_outlined, description: 'تنظیمات مربوط به تعاملات و نمایش محتوا'),
+    IranaMenuItem(
+      title: 'پست کردن هم‌زمان',
+      icon: Icons.dashboard_customize_outlined,
+      description: 'مدیریت انتشار هم‌زمان محتوا در بخش‌های مختلف ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'مسدودشده‌ها',
+      icon: Icons.block,
+      description: 'فهرست حساب‌هایی که مسدود کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'پنهان کردن داستان و پخش زنده',
+      icon: Icons.notifications_off_outlined,
+      description: 'مدیریت افرادی که نمی‌خواهید داستان یا پخش زنده‌شان را ببینید',
+    ),
+    IranaMenuItem(
+      title: 'فعالیت در فهرست دوستان',
+      icon: Icons.people_outline,
+      description: 'تنظیم نمایش فعالیت شما برای دوستان',
+    ),
+    IranaMenuItem(
+      title: 'پیام‌ها و پاسخ‌ها به داستان',
+      icon: Icons.send_outlined,
+      description: 'تنظیم پیام‌ها و پاسخ‌های دریافتی',
+    ),
+    IranaMenuItem(
+      title: 'نشان‌ها و ذکر نام‌ها',
+      icon: Icons.alternate_email,
+      description: 'مدیریت اشاره‌ها و برچسب‌گذاری حساب شما',
+    ),
+    IranaMenuItem(
+      title: 'نظرات',
+      icon: Icons.chat_bubble_outline,
+      description: 'مدیریت نظرات و پاسخ‌ها',
+    ),
+    IranaMenuItem(
+      title: 'اشتراک‌گذاری',
+      icon: Icons.repeat,
+      description: 'تنظیم نحوه اشتراک‌گذاری محتوا',
+    ),
+    IranaMenuItem(
+      title: 'محدودشده‌ها',
+      icon: Icons.person_off_outlined,
+      description: 'مدیریت حساب‌های محدودشده',
+    ),
+    IranaMenuItem(
+      title: 'محدود کردن تعاملات',
+      icon: Icons.report_gmailerrorred_outlined,
+      description: 'کنترل تعاملات و ارتباطات ناخواسته',
+    ),
+    IranaMenuItem(
+      title: 'کلمات پنهان‌شده',
+      icon: Icons.text_fields,
+      description: 'مدیریت کلمات و عبارت‌های پنهان‌شده',
+    ),
+    IranaMenuItem(
+      title: 'دنبال کردن و دعوت از دوستان',
+      icon: Icons.person_add_alt_1,
+      description: 'دعوت دوستان برای پیوستن به ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'موارد دلخواه',
+      icon: Icons.star_border,
+      description: 'دسترسی به محتواهای مورد علاقه شما',
+    ),
+    IranaMenuItem(
+      title: 'حساب‌های بی‌صداشده',
+      icon: Icons.volume_off_outlined,
+      description: 'مدیریت حساب‌هایی که بی‌صدا کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'اولویت‌های محتوا',
+      icon: Icons.tune,
+      description: 'تنظیم محتواهایی که بیشتر به شما نمایش داده می‌شوند',
+    ),
+    IranaMenuItem(
+      title: 'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها',
+      icon: Icons.favorite_border,
+      description: 'تنظیم نمایش آمار پسندیدن و اشتراک‌گذاری',
+    ),
+    IranaMenuItem(
+      title: 'حساب Meta',
+      icon: Icons.all_inclusive,
+      description: 'تنظیمات حساب و خدمات مرتبط با Meta در آینده',
+    ),
+    IranaMenuItem(
+      title: 'ذخیره‌شده',
+      icon: Icons.bookmark_border,
+      description: 'محتواهایی که ذخیره کرده‌اید',
+    ),
+    IranaMenuItem(
+      title: 'بایگانی',
+      icon: Icons.history,
+      description: 'مشاهده محتواهای بایگانی‌شده',
+    ),
+    IranaMenuItem(
+      title: 'فعالیت شما',
+      icon: Icons.monitor_heart_outlined,
+      description: 'بررسی فعالیت‌های انجام‌شده در ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'اعلان‌ها',
+      icon: Icons.notifications_none,
+      description: 'مدیریت اعلان‌ها و هشدارهای ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'مدیریت زمان',
+      icon: Icons.access_time,
+      description: 'مدیریت مدت‌زمان استفاده از ایرانا',
+    ),
+    IranaMenuItem(
+      title: 'Instagram ویژه رایانه لوحی',
+      icon: Icons.tablet_android_outlined,
+      description: 'اطلاعات مربوط به نمایش در دستگاه‌های مختلف',
+    ),
+    IranaMenuItem(
+      title: 'Meta Verified',
+      icon: Icons.verified_outlined,
+      description: 'اطلاعات مربوط به تأیید حساب',
+    ),
+    IranaMenuItem(
+      title: 'حریم خصوصی حساب',
+      icon: Icons.lock_outline,
+      description: 'مدیریت خصوصی یا عمومی بودن حساب',
+    ),
+    IranaMenuItem(
+      title: 'دوستان صمیمی',
+      icon: Icons.stars_outlined,
+      description: 'مدیریت فهرست دوستان صمیمی',
+    ),
+    IranaMenuItem(
+      title: 'مجوزهای دستگاه',
+      icon: Icons.phone_android,
+      description: 'دسترسی‌های برنامه به امکانات دستگاه',
+    ),
+    IranaMenuItem(
+      title: 'بایگانی کردن و دانلود کردن',
+      icon: Icons.download_outlined,
+      description: 'مدیریت بایگانی و دریافت اطلاعات',
+    ),
+    IranaMenuItem(
+      title: 'دسترس‌پذیری',
+      icon: Icons.accessibility_new,
+      description: 'تنظیم امکانات دسترس‌پذیری',
+    ),
+    IranaMenuItem(
+      title: 'زبان و ترجمه‌ها',
+      icon: Icons.translate,
+      description: 'تنظیم زبان برنامه و ترجمه محتوا',
+    ),
+    IranaMenuItem(
+      title: 'مصرف داده و کیفیت رسانه',
+      icon: Icons.signal_cellular_alt,
+      description: 'تنظیم مصرف اینترنت و کیفیت عکس و ویدئو',
+    ),
+    IranaMenuItem(
+      title: 'مجوزهای وب‌سایت',
+      icon: Icons.devices,
+      description: 'مدیریت دسترسی‌های وب‌سایت',
+    ),
+    IranaMenuItem(
+      title: 'نظرات در «حساب‌های نه‌چندان...»',
+      icon: Icons.home_outlined,
+      description: 'تنظیمات مربوط به تعاملات و نمایش محتوا',
+    ),
   ];
 
   void openItem(BuildContext context, IranaMenuItem item) {
@@ -2925,7 +3458,9 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                               onPressed: publishing ? null : publishStory,
                               icon: const Icon(Icons.send),
                               label: Text(
-                                publishing ? 'در حال انتشار...' : 'انتشار استوری',
+                                publishing
+                                    ? 'در حال انتشار...'
+                                    : 'انتشار استوری',
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: iranaPurple,
