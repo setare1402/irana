@@ -2206,41 +2206,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const Expanded(
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.workspace_premium,
-                                      color: Color(0xFFFFD76A),
-                                      size: 22,
-                                    ),
-                                    SizedBox(width: 2),
-                                    Text(
-                                      'IRANA',
-                                      style: TextStyle(
-                                        color: Color(0xFFFFD76A),
-                                        fontSize: 39,
-                                        height: 1.1,
-                                        fontWeight: FontWeight.w900,
-                                        fontStyle: FontStyle.italic,
-                                        letterSpacing: 1.2,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black54,
-                                            blurRadius: 8,
-                                            offset: Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 100,
-                                height: 82,
-                                child: CustomPaint(
-                                  painter: _PhoenixMarkPainter(),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Image.asset(
+                                    'assets/images/irana_brand_header.jpg',
+                                    width: 275,
+                                    height: 72,
+                                    fit: BoxFit.contain,
+                                    alignment: Alignment.centerLeft,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 4),
