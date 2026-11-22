@@ -2304,15 +2304,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: CircleAvatar(
                         radius: 67,
                         backgroundColor: const Color(0xFF3B126C),
-                        backgroundImage: image,
-                        child: image == null
-                            ? const CustomPaint(
-                                size: Size(110, 110),
-                                painter: _PhoenixMarkPainter(
-                                  avatarMode: true,
-                                ),
-                              )
-                            : null,
+                        backgroundImage: image ??
+                            const AssetImage(
+                              'assets/images/irana_default_avatar.jpg',
+                            ),
                       ),
                     ),
                   ),
