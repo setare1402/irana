@@ -2158,332 +2158,385 @@ class _ProfilePageState extends State<ProfilePage> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          Container(
-            height: 145,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                colors: [
-                  Color(0xFF7139A8),
-                  Color(0xFF9B55C5),
-                  Color(0xFFE84B91),
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // Profile-only visual refresh. Existing profile actions and data stay intact.
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                height: 205,
+                padding: const EdgeInsets.fromLTRB(18, 12, 18, 48),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      Color(0xFF190044),
+                      Color(0xFF4B087D),
+                      Color(0xFF7D35B4),
+                      Color(0xFF32105F),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(34),
+                  ),
+                ),
+                child: Stack(
                   children: [
-                    Text(
-                      'IRANA',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 29,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 2,
+                    const Positioned(
+                      left: 18,
+                      top: 34,
+                      child: Icon(
+                        Icons.auto_awesome,
+                        color: iranaGold,
+                        size: 46,
                       ),
                     ),
-                    SizedBox(height: 5),
-                    Text(
-                      'پروفایل من',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'منوی تنظیمات',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const IranaSettingsPage(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'IRANA',
+                                style: TextStyle(
+                                  color: iranaGold,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              SizedBox(height: 3),
+                              Text(
+                                'جهان زیبای ایرانا',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.menu,
-                        color: Colors.white,
-                        size: 34,
-                      ),
-                    ),
-                    const Icon(
-                      Icons.auto_awesome,
-                      color: iranaGold,
-                      size: 45,
+                        ),
+                        IconButton(
+                          tooltip: 'منوی تنظیمات',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const IranaSettingsPage(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.menu_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          Transform.translate(
-            offset: const Offset(0, -43),
-            child: Column(
-              children: [
-                GestureDetector(
+              ),
+              Positioned(
+                right: 18,
+                bottom: -42,
+                child: GestureDetector(
                   onTap: changeAvatar,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: iranaGold,
+                      gradient: const LinearGradient(
+                        colors: [iranaGold, Color(0xFFFFF0B5), iranaGold],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: iranaPurple.withOpacity(0.22),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: CircleAvatar(
-                      radius: 52,
+                      radius: 53,
                       backgroundColor: const Color(0xFFE9DDF7),
                       backgroundImage: image,
                       child: image == null
                           ? const Icon(
                               Icons.person,
-                              size: 60,
+                              size: 58,
                               color: iranaPurple,
                             )
                           : null,
                     ),
                   ),
                 ),
-                const SizedBox(height: 7),
+              ),
+              const Positioned(
+                right: 91,
+                bottom: -27,
+                child: CircleAvatar(
+                  radius: 15,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.camera_alt_rounded,
+                    color: iranaPurple,
+                    size: 17,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 52),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              username,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          const Icon(
+                            Icons.verified,
+                            color: Color(0xFF159DE0),
+                            size: 22,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        profileName,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 TextButton.icon(
                   onPressed: changeAvatar,
-                  icon: const Icon(Icons.camera_alt_outlined, size: 18),
-                  label: const Text('تغییر عکس پروفایل'),
-                  style: TextButton.styleFrom(foregroundColor: iranaPurple),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      profileName,
-                      style: const TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    const Icon(Icons.verified, color: iranaPurple, size: 19),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '@$username',
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ProfileStat(
-                        number: widget.posts.length.toString(),
-                        label: 'پست',
-                      ),
-                      const ProfileStat(number: '0', label: 'دنبال‌کننده'),
-                      const ProfileStat(number: '0', label: 'دنبال‌شونده'),
-                    ],
+                  icon: const Icon(Icons.photo_camera_outlined, size: 17),
+                  label: const Text('عکس'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: iranaPurple,
                   ),
                 ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: editProfile,
-                          icon: const Icon(Icons.edit_outlined),
-                          label: const Text('ویرایش پروفایل'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: iranaPurple,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      OutlinedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'اشتراک‌گذاری پروفایل در نسخه بعدی فعال می‌شود',
-                              ),
-                            ),
-                          );
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: iranaPurple,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 13,
-                            horizontal: 14,
-                          ),
-                          side: const BorderSide(color: iranaPurple),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Icon(Icons.share_outlined),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(horizontal: 18),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Text(
-                    bio.isEmpty ? 'هنوز بیوگرافی ثبت نشده است' : bio,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'هایلایت‌ها',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: 90,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    children: const [
-                      _ProfileHighlight(
-                        icon: Icons.add,
-                        title: 'جدید',
-                        isNew: true,
-                      ),
-                      _ProfileHighlight(
-                        icon: Icons.photo_library_outlined,
-                        title: 'لحظه‌ها',
-                      ),
-                      _ProfileHighlight(
-                        icon: Icons.favorite_border,
-                        title: 'علاقه‌ها',
-                      ),
-                      _ProfileHighlight(
-                        icon: Icons.star_border,
-                        title: 'منتخب',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Divider(height: 1),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-                  child: Row(
-                    children: [
-                      Icon(Icons.grid_on, color: iranaPurple),
-                      SizedBox(width: 9),
-                      Text(
-                        'پست‌های من',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (widget.posts.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 35),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.photo_library_outlined,
-                          size: 55,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(height: 10),
-                        Text('هنوز پستی منتشر نکرده‌ای'),
-                      ],
-                    ),
-                  )
-                else
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(2),
-                    itemCount: widget.posts.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 2,
-                      mainAxisSpacing: 2,
-                    ),
-                    itemBuilder: (context, index) {
-                      final post = widget.posts[index];
-                      final file = File(post.imagePath);
-
-                      if (!file.existsSync()) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image),
-                        );
-                      }
-
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          post.isVideo
-                              ? Container(
-                                  color: Colors.black87,
-                                  child: const Icon(
-                                    Icons.play_circle_fill,
-                                    color: Colors.white,
-                                    size: 40,
-                                  ),
-                                )
-                              : Image.file(file, fit: BoxFit.cover),
-                          if (post.isVideo)
-                            const Positioned(
-                              top: 5,
-                              left: 5,
-                              child: Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
-                const SizedBox(height: 25),
               ],
             ),
           ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ProfileStat(
+                  number: widget.posts.length.toString(),
+                  label: 'پست‌ها',
+                ),
+                const ProfileStat(number: '0', label: 'دنبال‌کننده'),
+                const ProfileStat(number: '0', label: 'دنبال‌شونده'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: editProfile,
+                    icon: const Icon(Icons.edit_rounded, size: 19),
+                    label: const Text('ویرایش پروفایل'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: iranaPurple,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'اشتراک‌گذاری پروفایل در نسخه بعدی فعال می‌شود',
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.share_rounded, size: 19),
+                    label: const Text('اشتراک‌گذاری'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: iranaPurple,
+                      side: const BorderSide(color: iranaPurple, width: 1.3),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 15),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: Text(
+              bio.isEmpty ? 'هنوز بیوگرافی ثبت نشده است' : bio,
+              textAlign: TextAlign.right,
+              style: const TextStyle(fontSize: 14, height: 1.8),
+            ),
+          ),
+          const SizedBox(height: 19),
+          SizedBox(
+            height: 105,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: const [
+                _ProfileHighlight(
+                  icon: Icons.add,
+                  title: 'جدید',
+                  isNew: true,
+                ),
+                _ProfileHighlight(
+                  icon: Icons.account_balance,
+                  title: 'تاریخ ایران',
+                ),
+                _ProfileHighlight(
+                  icon: Icons.local_florist,
+                  title: 'طبیعت',
+                ),
+                _ProfileHighlight(
+                  icon: Icons.location_city,
+                  title: 'تهران',
+                ),
+                _ProfileHighlight(
+                  icon: Icons.favorite,
+                  title: 'عشق و زندگی',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 22, vertical: 13),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Icon(Icons.grid_on_rounded, color: iranaPurple, size: 27),
+                Icon(Icons.video_library_outlined, size: 27),
+                Icon(Icons.play_circle_outline_rounded, size: 29),
+                Icon(Icons.person_pin_outlined, size: 28),
+              ],
+            ),
+          ),
+          Container(
+            height: 3,
+            margin: const EdgeInsets.only(left: 0, right: 0),
+            alignment: Alignment.centerRight,
+            child: Container(
+              width: MediaQuery.of(context).size.width / 4,
+              decoration: BoxDecoration(
+                color: iranaPurple,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          if (widget.posts.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 35),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 55,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 10),
+                  Text('هنوز پستی منتشر نکرده‌ای'),
+                ],
+              ),
+            )
+          else
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(2),
+              itemCount: widget.posts.length,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 2,
+                mainAxisSpacing: 2,
+              ),
+              itemBuilder: (context, index) {
+                final post = widget.posts[index];
+                final file = File(post.imagePath);
+
+                if (!file.existsSync()) {
+                  return Container(
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.broken_image),
+                  );
+                }
+
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    post.isVideo
+                        ? Container(
+                            color: Colors.black87,
+                            child: const Icon(
+                              Icons.play_circle_fill,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          )
+                        : Image.file(file, fit: BoxFit.cover),
+                    if (post.isVideo)
+                      const Positioned(
+                        top: 5,
+                        left: 5,
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          const SizedBox(height: 25),
         ],
       ),
     );
