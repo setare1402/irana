@@ -33,8 +33,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate app launcher icons
-        run: dart run flutter_launcher_icons
+      - name: Generate Android launcher icon only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('pubspec.yaml')
+          s = p.read_text()
+          old = '  ios: true\n'
+          assert s.count(old) == 1, 'Expected exactly one iOS icon setting'
+          p.write_text(s.replace(old, '  ios: false\n', 1))
+          PY
+          dart run flutter_launcher_icons
 
       - name: Skip incompatible Android lint task
         run: |
@@ -77,8 +86,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate app launcher icons
-        run: dart run flutter_launcher_icons
+      - name: Generate iOS launcher icon only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('pubspec.yaml')
+          s = p.read_text()
+          old = '  android: true\n'
+          assert s.count(old) == 1, 'Expected exactly one Android icon setting'
+          p.write_text(s.replace(old, '  android: false\n', 1))
+          PY
+          dart run flutter_launcher_icons
 
       - name: Build iOS
         run: flutter build ios --release --no-codesign
