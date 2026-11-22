@@ -2158,145 +2158,197 @@ class _ProfilePageState extends State<ProfilePage> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Profile-only visual refresh. Existing profile actions and data stay intact.
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                height: 205,
-                padding: const EdgeInsets.fromLTRB(18, 12, 18, 48),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [
-                      Color(0xFF190044),
-                      Color(0xFF4B087D),
-                      Color(0xFF7D35B4),
-                      Color(0xFF32105F),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.vertical(
-                    bottom: Radius.circular(34),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    const Positioned(
-                      left: 18,
-                      top: 34,
-                      child: Icon(
-                        Icons.auto_awesome,
-                        color: iranaGold,
-                        size: 46,
-                      ),
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          SizedBox(
+            height: 330,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 285,
+                  child: ClipPath(
+                    clipper: _ProfileBannerClipper(),
+                    child: Stack(
+                      fit: StackFit.expand,
                       children: [
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF10002E),
+                                Color(0xFF30005F),
+                                Color(0xFF650A9C),
+                                Color(0xFF26004F),
+                              ],
+                              stops: [0, 0.38, 0.72, 1],
+                            ),
+                          ),
+                        ),
+                        const CustomPaint(
+                          painter: _ProfileBannerPainter(),
+                        ),
+                        Positioned(
+                          top: 10,
+                          left: 18,
+                          right: 18,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                'IRANA',
-                                style: TextStyle(
-                                  color: iranaGold,
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
-                                  fontStyle: FontStyle.italic,
+                              const Expanded(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.workspace_premium,
+                                      color: Color(0xFFFFD76A),
+                                      size: 22,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'IRANA',
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD76A),
+                                        fontSize: 39,
+                                        height: 1.1,
+                                        fontWeight: FontWeight.w900,
+                                        fontStyle: FontStyle.italic,
+                                        letterSpacing: 1.2,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black54,
+                                            blurRadius: 8,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(height: 3),
-                              Text(
-                                'جهان زیبای ایرانا',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
+                              const SizedBox(
+                                width: 100,
+                                height: 82,
+                                child: CustomPaint(
+                                  painter: _PhoenixMarkPainter(),
                                 ),
+                              ),
+                              const SizedBox(width: 4),
+                              Column(
+                                children: [
+                                  IconButton(
+                                    tooltip: 'افزودن',
+                                    onPressed: editProfile,
+                                    icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.white,
+                                      size: 31,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'منوی تنظیمات',
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const IranaSettingsPage(),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.menu_rounded,
+                                      color: Colors.white,
+                                      size: 31,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                        IconButton(
-                          tooltip: 'منوی تنظیمات',
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const IranaSettingsPage(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.menu_rounded,
-                            color: Colors.white,
-                            size: 32,
+                        const Positioned(
+                          right: 28,
+                          top: 105,
+                          child: Text(
+                            'جهان زیبای ایرانا',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              letterSpacing: 1,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              Positioned(
-                right: 18,
-                bottom: -42,
-                child: GestureDetector(
-                  onTap: changeAvatar,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [iranaGold, Color(0xFFFFF0B5), iranaGold],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: iranaPurple.withOpacity(0.22),
-                          blurRadius: 14,
-                          offset: const Offset(0, 5),
+                Positioned(
+                  left: 20,
+                  top: 115,
+                  child: GestureDetector(
+                    onTap: changeAvatar,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFFFFD45E),
+                            Color(0xFFFFF1B5),
+                            Color(0xFFC58A22),
+                            Color(0xFFFFD45E),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 53,
-                      backgroundColor: const Color(0xFFE9DDF7),
-                      backgroundImage: image,
-                      child: image == null
-                          ? const Icon(
-                              Icons.person,
-                              size: 58,
-                              color: iranaPurple,
-                            )
-                          : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x66000000),
+                            blurRadius: 15,
+                            offset: Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 67,
+                        backgroundColor: const Color(0xFF3B126C),
+                        backgroundImage: image,
+                        child: image == null
+                            ? const CustomPaint(
+                                size: Size(110, 110),
+                                painter: _PhoenixMarkPainter(
+                                  avatarMode: true,
+                                ),
+                              )
+                            : null,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const Positioned(
-                right: 91,
-                bottom: -27,
-                child: CircleAvatar(
-                  radius: 15,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.camera_alt_rounded,
-                    color: iranaPurple,
-                    size: 17,
+                Positioned(
+                  left: 25,
+                  top: 225,
+                  child: GestureDetector(
+                    onTap: changeAvatar,
+                    child: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        color: Color(0xFF4C087D),
+                        size: 23,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 52),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
+                Positioned(
+                  right: 24,
+                  top: 145,
+                  width: 210,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -2308,7 +2360,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 21,
+                                color: Colors.white,
+                                fontSize: 23,
                                 fontWeight: FontWeight.w900,
                               ),
                             ),
@@ -2316,51 +2369,81 @@ class _ProfilePageState extends State<ProfilePage> {
                           const SizedBox(width: 5),
                           const Icon(
                             Icons.verified,
-                            color: Color(0xFF159DE0),
-                            size: 22,
+                            color: Color(0xFF12A9F5),
+                            size: 27,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 5),
                       Text(
                         profileName,
                         style: const TextStyle(
-                          color: Colors.black54,
-                          fontSize: 14,
+                          color: Colors.white,
+                          fontSize: 16,
                         ),
+                      ),
+                      const SizedBox(height: 22),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _BannerStat(
+                            value: widget.posts.length.toString(),
+                            label: 'پست‌ها',
+                          ),
+                          Container(
+                            width: 1,
+                            height: 48,
+                            color: Colors.white70,
+                          ),
+                          const _BannerStat(value: '0', label: 'دنبال‌کننده'),
+                          Container(
+                            width: 1,
+                            height: 48,
+                            color: Colors.white70,
+                          ),
+                          const _BannerStat(value: '0', label: 'دنبال‌شونده'),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: changeAvatar,
-                  icon: const Icon(Icons.photo_camera_outlined, size: 17),
-                  label: const Text('عکس'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: iranaPurple,
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              bio.isEmpty ? 'به دنیای زیبای ایران خوش آمدید 💜' : bio,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                color: Color(0xFF21152C),
+                fontSize: 15,
+                height: 1.9,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(24, 3, 24, 12),
+            child: Row(
+              children: [
+                Icon(Icons.link, color: Color(0xFF5A128C), size: 24),
+                SizedBox(width: 7),
+                Text(
+                  'https://irana.app',
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(
+                    color: Color(0xFF5A128C),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 18),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ProfileStat(
-                  number: widget.posts.length.toString(),
-                  label: 'پست‌ها',
-                ),
-                const ProfileStat(number: '0', label: 'دنبال‌کننده'),
-                const ProfileStat(number: '0', label: 'دنبال‌شونده'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 Expanded(
@@ -2369,12 +2452,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: const Icon(Icons.edit_rounded, size: 19),
                     label: const Text('ویرایش پروفایل'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: iranaPurple,
+                      backgroundColor: const Color(0xFF5A078D),
                       foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      elevation: 2,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
@@ -2392,13 +2475,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       );
                     },
                     icon: const Icon(Icons.share_rounded, size: 19),
-                    label: const Text('اشتراک‌گذاری'),
+                    label: const Text('اشتراک‌گذاری پروفایل'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: iranaPurple,
-                      side: const BorderSide(color: iranaPurple, width: 1.3),
-                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      foregroundColor: const Color(0xFF4C087D),
+                      side: const BorderSide(
+                        color: Color(0xFF4C087D),
+                        width: 1.4,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(13),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
                   ),
@@ -2406,18 +2492,29 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 18),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Text(
-              bio.isEmpty ? 'هنوز بیوگرافی ثبت نشده است' : bio,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 14, height: 1.8),
+            child: Row(
+              children: [
+                const Text(
+                  'هایلایت‌ها',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                ),
+                const Spacer(),
+                Text(
+                  'داستان‌های منتخب',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 19),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 105,
+            height: 112,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -2453,7 +2550,7 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Icon(Icons.grid_on_rounded, color: iranaPurple, size: 27),
+                Icon(Icons.grid_on_rounded, color: Color(0xFF5A078D), size: 27),
                 Icon(Icons.video_library_outlined, size: 27),
                 Icon(Icons.play_circle_outline_rounded, size: 29),
                 Icon(Icons.person_pin_outlined, size: 28),
@@ -2462,12 +2559,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Container(
             height: 3,
-            margin: const EdgeInsets.only(left: 0, right: 0),
             alignment: Alignment.centerRight,
             child: Container(
               width: MediaQuery.of(context).size.width / 4,
               decoration: BoxDecoration(
-                color: iranaPurple,
+                color: const Color(0xFF5A078D),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -2556,32 +2652,344 @@ class _ProfileHighlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 75,
-      margin: const EdgeInsets.symmetric(horizontal: 5),
+    return SizedBox(
+      width: 94,
       child: Column(
         children: [
           Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
+            width: 76,
+            height: 76,
+            padding: const EdgeInsets.all(3),
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: isNew ? const Color(0xFFEDE2F7) : Colors.white,
-              border: Border.all(
-                color: isNew ? iranaPurple : iranaGold,
-                width: 2,
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFFFD45E),
+                  Color(0xFFFFF3C1),
+                  Color(0xFFC58A22),
+                ],
               ),
             ),
-            child: Icon(icon, color: iranaPurple, size: 27),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isNew
+                      ? const [Color(0xFF7A12BC), Color(0xFF30005F)]
+                      : const [Color(0xFFEEE0F8), Colors.white],
+                ),
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Icon(
+                icon,
+                color: isNew ? Colors.white : const Color(0xFF5A128C),
+                size: 32,
+              ),
+            ),
           ),
           const SizedBox(height: 5),
-          Text(title, style: const TextStyle(fontSize: 12)),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
   }
 }
 
+class _BannerStat extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _BannerStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 21,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white, fontSize: 11),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileBannerClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width, size.height - 42)
+      ..quadraticBezierTo(
+        size.width * 0.76,
+        size.height + 10,
+        size.width * 0.48,
+        size.height - 5,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.18,
+        size.height + 13,
+        0,
+        size.height - 48,
+      )
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _ProfileBannerPainter extends CustomPainter {
+  const _ProfileBannerPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gold = Paint()
+      ..color = const Color(0xFFFFD76A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final glow = Paint()
+      ..color = const Color(0x66D89BFF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    final wave = Path()
+      ..moveTo(-10, size.height * 0.52)
+      ..cubicTo(
+        size.width * 0.18,
+        size.height * 0.28,
+        size.width * 0.42,
+        size.height * 0.72,
+        size.width * 0.62,
+        size.height * 0.38,
+      )
+      ..cubicTo(
+        size.width * 0.78,
+        size.height * 0.12,
+        size.width * 0.9,
+        size.height * 0.24,
+        size.width + 10,
+        size.height * 0.06,
+      );
+    canvas.drawPath(wave, glow);
+    canvas.drawPath(wave, gold);
+
+    final thinWave = Path()
+      ..moveTo(-5, size.height * 0.7)
+      ..cubicTo(
+        size.width * 0.22,
+        size.height * 0.48,
+        size.width * 0.34,
+        size.height * 0.84,
+        size.width * 0.56,
+        size.height * 0.58,
+      )
+      ..cubicTo(
+        size.width * 0.78,
+        size.height * 0.35,
+        size.width * 0.9,
+        size.height * 0.55,
+        size.width + 5,
+        size.height * 0.32,
+      );
+    canvas.drawPath(thinWave, gold);
+
+    final starPaint = Paint()..color = const Color(0xFFFFD76A);
+    for (final point in <Offset>[
+      Offset(size.width * 0.08, size.height * 0.18),
+      Offset(size.width * 0.58, size.height * 0.12),
+      Offset(size.width * 0.82, size.height * 0.2),
+      Offset(size.width * 0.94, size.height * 0.42),
+    ]) {
+      final path = Path()
+        ..moveTo(point.dx, point.dy - 6)
+        ..lineTo(point.dx + 2, point.dy - 2)
+        ..lineTo(point.dx + 6, point.dy)
+        ..lineTo(point.dx + 2, point.dy + 2)
+        ..lineTo(point.dx, point.dy + 6)
+        ..lineTo(point.dx - 2, point.dy + 2)
+        ..lineTo(point.dx - 6, point.dy)
+        ..lineTo(point.dx - 2, point.dy - 2)
+        ..close();
+      canvas.drawPath(path, starPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _PhoenixMarkPainter extends CustomPainter {
+  final bool avatarMode;
+
+  const _PhoenixMarkPainter({this.avatarMode = false});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final gold = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFF0A6), Color(0xFFFFC43D), Color(0xFFC27A18)],
+      ).createShader(Offset.zero & size)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = avatarMode ? 2.8 : 2.2
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final purple = Paint()
+      ..color = avatarMode ? const Color(0xFF8A35C6) : const Color(0xFF6D21A6)
+      ..style = PaintingStyle.fill;
+
+    final center = Offset(size.width * 0.5, size.height * 0.58);
+    final scale = size.width / 100;
+
+    Path wing(double direction) {
+      return Path()
+        ..moveTo(center.dx, center.dy)
+        ..cubicTo(
+          center.dx + direction * 12 * scale,
+          center.dy - 22 * scale,
+          center.dx + direction * 28 * scale,
+          center.dy - 49 * scale,
+          center.dx + direction * 46 * scale,
+          center.dy - 54 * scale,
+        )
+        ..cubicTo(
+          center.dx + direction * 39 * scale,
+          center.dy - 34 * scale,
+          center.dx + direction * 35 * scale,
+          center.dy - 22 * scale,
+          center.dx + direction * 27 * scale,
+          center.dy - 9 * scale,
+        )
+        ..cubicTo(
+          center.dx + direction * 18 * scale,
+          center.dy - 2 * scale,
+          center.dx + direction * 8 * scale,
+          center.dy + 3 * scale,
+          center.dx,
+          center.dy,
+        )
+        ..close();
+    }
+
+    canvas.drawPath(wing(-1), purple);
+    canvas.drawPath(wing(-1), gold);
+    canvas.drawPath(wing(1), purple);
+    canvas.drawPath(wing(1), gold);
+
+    for (int i = 0; i < 4; i++) {
+      final feather = Path()
+        ..moveTo(center.dx - (7 + i * 3) * scale, center.dy - 7 * scale)
+        ..quadraticBezierTo(
+          center.dx - (23 + i * 5) * scale,
+          center.dy - (13 + i * 7) * scale,
+          center.dx - (34 + i * 4) * scale,
+          center.dy - (27 + i * 7) * scale,
+        );
+      canvas.drawPath(feather, gold);
+      final other = Path()
+        ..moveTo(center.dx + (7 + i * 3) * scale, center.dy - 7 * scale)
+        ..quadraticBezierTo(
+          center.dx + (23 + i * 5) * scale,
+          center.dy - (13 + i * 7) * scale,
+          center.dx + (34 + i * 4) * scale,
+          center.dy - (27 + i * 7) * scale,
+        );
+      canvas.drawPath(other, gold);
+    }
+
+    final body = Path()
+      ..moveTo(center.dx, center.dy - 18 * scale)
+      ..cubicTo(
+        center.dx + 11 * scale,
+        center.dy - 5 * scale,
+        center.dx + 8 * scale,
+        center.dy + 14 * scale,
+        center.dx,
+        center.dy + 23 * scale,
+      )
+      ..cubicTo(
+        center.dx - 8 * scale,
+        center.dy + 14 * scale,
+        center.dx - 11 * scale,
+        center.dy - 5 * scale,
+        center.dx,
+        center.dy - 18 * scale,
+      )
+      ..close();
+    canvas.drawPath(body, purple);
+    canvas.drawPath(body, gold);
+
+    final head = Offset(center.dx, center.dy - 24 * scale);
+    canvas.drawCircle(head, 5 * scale, purple);
+    canvas.drawCircle(head, 5 * scale, gold);
+
+    final beak = Path()
+      ..moveTo(center.dx + 4 * scale, center.dy - 25 * scale)
+      ..lineTo(center.dx + 13 * scale, center.dy - 29 * scale)
+      ..lineTo(center.dx + 5 * scale, center.dy - 20 * scale);
+    canvas.drawPath(beak, gold);
+
+    final crest = Path()
+      ..moveTo(center.dx - 2 * scale, center.dy - 29 * scale)
+      ..quadraticBezierTo(
+        center.dx - 14 * scale,
+        center.dy - 45 * scale,
+        center.dx - 5 * scale,
+        center.dy - 49 * scale,
+      )
+      ..moveTo(center.dx + 1 * scale, center.dy - 29 * scale)
+      ..quadraticBezierTo(
+        center.dx + 5 * scale,
+        center.dy - 45 * scale,
+        center.dx + 13 * scale,
+        center.dy - 43 * scale,
+      );
+    canvas.drawPath(crest, gold);
+
+    final tail = Path()
+      ..moveTo(center.dx, center.dy + 19 * scale)
+      ..cubicTo(
+        center.dx - 13 * scale,
+        center.dy + 30 * scale,
+        center.dx - 17 * scale,
+        center.dy + 38 * scale,
+        center.dx - 24 * scale,
+        center.dy + 43 * scale,
+      )
+      ..moveTo(center.dx, center.dy + 19 * scale)
+      ..cubicTo(
+        center.dx + 13 * scale,
+        center.dy + 30 * scale,
+        center.dx + 17 * scale,
+        center.dy + 38 * scale,
+        center.dx + 24 * scale,
+        center.dy + 43 * scale,
+      );
+    canvas.drawPath(tail, gold);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 class ProfileStat extends StatelessWidget {
   final String number;
   final String label;
