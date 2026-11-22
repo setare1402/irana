@@ -25,6 +25,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/irana_brand_header.jpg
+    - assets/images/irana_default_avatar.jpg
+
 flutter_launcher_icons:
   android: true
   ios: true
