@@ -1004,32 +1004,40 @@ class _IranaHomeState extends State<IranaHome> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: const Text(
-            'IRANA',
-            style: TextStyle(
-              color: iranaPurple,
-              fontSize: 27,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-            ),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () =>
-                  showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
-              icon: const Icon(Icons.favorite_border, color: Colors.black87),
-            ),
-            IconButton(
-              onPressed: () =>
-                  showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
-              icon: const Icon(Icons.send_outlined, color: Colors.black87),
-            ),
-            const SizedBox(width: 5),
-          ],
-        ),
+        appBar: selectedIndex == 4
+            ? null
+            : AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                title: const Text(
+                  'IRANA',
+                  style: TextStyle(
+                    color: iranaPurple,
+                    fontSize: 27,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    onPressed: () =>
+                        showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
+                    icon: const Icon(
+                      Icons.favorite_border,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () =>
+                        showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
+                    icon: const Icon(
+                      Icons.send_outlined,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                ],
+              ),
         body: IndexedStack(
           index: selectedIndex,
           children: [
