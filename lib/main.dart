@@ -2247,8 +2247,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               Column(
                                 children: [
                                   IconButton(
-                                    tooltip: 'افزودن',
-                                    onPressed: editProfile,
+                                    tooltip: 'انتشار محتوای جدید',
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'برای انتشار محتوا، بخش انتشار را از نوار پایین انتخاب کنید',
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     icon: const Icon(
                                       Icons.add_circle_outline,
                                       color: Colors.white,
