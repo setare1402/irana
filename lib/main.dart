@@ -212,6 +212,7 @@ class _IranaHomeState extends State<IranaHome> {
 
   List<IranaPost> posts = [];
   List<IranaStory> stories = [];
+  List<IranaStory> highlightedStories = [];
   List<IranaComment> comments = [];
   List<IranaForward> forwards = [];
   List<String> savedPostIds = [];
@@ -257,6 +258,7 @@ class _IranaHomeState extends State<IranaHome> {
     try {
       final p = prefs.getString('irana_posts');
       final s = prefs.getString('irana_stories');
+      final h = prefs.getString('irana_highlights');
       final c = prefs.getString('irana_comments');
       final f = prefs.getString('irana_forwards');
 
@@ -271,6 +273,13 @@ class _IranaHomeState extends State<IranaHome> {
         stories = (jsonDecode(s) as List)
             .map((e) => IranaStory.fromJson(e))
             .where((e) => !e.expired && File(e.filePath).existsSync())
+            .toList();
+      }
+
+      if (h != null) {
+        highlightedStories = (jsonDecode(h) as List)
+            .map((e) => IranaStory.fromJson(e))
+            .where((e) => File(e.filePath).existsSync())
             .toList();
       }
 
@@ -306,6 +315,10 @@ class _IranaHomeState extends State<IranaHome> {
     await prefs.setString(
       'irana_stories',
       jsonEncode(stories.map((e) => e.toJson()).toList()),
+    );
+    await prefs.setString(
+      'irana_highlights',
+      jsonEncode(highlightedStories.map((e) => e.toJson()).toList()),
     );
     await prefs.setString(
       'irana_comments',
@@ -780,6 +793,98 @@ class _IranaHomeState extends State<IranaHome> {
     );
   }
 
+  Future<void> addStoryToHighlights() async {
+    final availableStories = stories
+        .where((story) => File(story.filePath).existsSync())
+        .toList();
+
+    if (availableStories.isEmpty) {
+      showMessage('برای هایلایت کردن، ابتدا یک استوری منتشر کن');
+      return;
+    }
+
+    final selected = await showDialog<IranaStory>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('انتخاب استوری برای هایلایت'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: availableStories.length,
+              itemBuilder: (context, index) {
+                final story = availableStories[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: story.isVideo
+                        ? null
+                        : FileImage(File(story.filePath)),
+                    child: story.isVideo
+                        ? const Icon(Icons.play_arrow)
+                        : null,
+                  ),
+                  title: Text('استوری ${index + 1}'),
+                  subtitle: Text(
+                    '${story.createdAt.day}/${story.createdAt.month}/${story.createdAt.year}',
+                  ),
+                  onTap: () => Navigator.pop(dialogContext, story),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('انصراف'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (selected == null) return;
+    if (highlightedStories.any((story) => story.id == selected.id)) {
+      showMessage('این استوری قبلاً به هایلایت اضافه شده است');
+      return;
+    }
+
+    setState(() => highlightedStories.insert(0, selected));
+    await saveData();
+    showMessage('استوری به هایلایت اضافه شد و دائمی می‌ماند 💜');
+  }
+
+  Future<void> removeStoryFromHighlights(IranaStory story) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('حذف از هایلایت'),
+          content: const Text('این استوری فقط از هایلایت حذف شود؟'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('انصراف'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('حذف'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+    setState(() {
+      highlightedStories.removeWhere((item) => item.id == story.id);
+    });
+    await saveData();
+    showMessage('استوری از هایلایت حذف شد');
+  }
+
   void openImage(IranaPost post) {
     Navigator.push(
       context,
@@ -1064,7 +1169,13 @@ class _IranaHomeState extends State<IranaHome> {
               onOpenStory: openStory,
               onOpenVideo: openVideo,
             ),
-            ProfilePage(posts: posts),
+            ProfilePage(
+              posts: posts,
+              highlights: highlightedStories,
+              onAddHighlight: addStoryToHighlights,
+              onOpenHighlight: openStory,
+              onRemoveHighlight: removeStoryFromHighlights,
+            ),
           ],
         ),
         bottomNavigationBar: NavigationBar(
@@ -1962,7 +2073,19 @@ class VideosPage extends StatelessWidget {
 
 class ProfilePage extends StatefulWidget {
   final List<IranaPost> posts;
-  const ProfilePage({super.key, required this.posts});
+  final List<IranaStory> highlights;
+  final VoidCallback onAddHighlight;
+  final Function(IranaStory) onOpenHighlight;
+  final Function(IranaStory) onRemoveHighlight;
+
+  const ProfilePage({
+    super.key,
+    required this.posts,
+    required this.highlights,
+    required this.onAddHighlight,
+    required this.onOpenHighlight,
+    required this.onRemoveHighlight,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -2518,27 +2641,14 @@ class _ProfilePageState extends State<ProfilePage> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: const [
-                _ProfileHighlight(
-                  icon: Icons.add,
-                  title: 'جدید',
-                  isNew: true,
-                ),
-                _ProfileHighlight(
-                  icon: Icons.account_balance,
-                  title: 'تاریخ ایران',
-                ),
-                _ProfileHighlight(
-                  icon: Icons.local_florist,
-                  title: 'طبیعت',
-                ),
-                _ProfileHighlight(
-                  icon: Icons.location_city,
-                  title: 'تهران',
-                ),
-                _ProfileHighlight(
-                  icon: Icons.favorite,
-                  title: 'عشق و زندگی',
+              children: [
+                _ProfileAddHighlight(onTap: widget.onAddHighlight),
+                ...widget.highlights.map(
+                  (story) => _ProfileHighlight(
+                    story: story,
+                    onTap: () => widget.onOpenHighlight(story),
+                    onDelete: () => widget.onRemoveHighlight(story),
+                  ),
                 ),
               ],
             ),
@@ -2639,16 +2749,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-class _ProfileHighlight extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final bool isNew;
+class _ProfileAddHighlight extends StatelessWidget {
+  final VoidCallback onTap;
 
-  const _ProfileHighlight({
-    required this.icon,
-    required this.title,
-    this.isNew = false,
-  });
+  const _ProfileAddHighlight({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -2656,44 +2760,117 @@ class _ProfileHighlight extends StatelessWidget {
       width: 94,
       child: Column(
         children: [
-          Container(
-            width: 76,
-            height: 76,
-            padding: const EdgeInsets.all(3),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  Color(0xFFFFD45E),
-                  Color(0xFFFFF3C1),
-                  Color(0xFFC58A22),
-                ],
-              ),
-            ),
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(40),
             child: Container(
+              width: 76,
+              height: 76,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isNew
-                      ? const [Color(0xFF7A12BC), Color(0xFF30005F)]
-                      : const [Color(0xFFEEE0F8), Colors.white],
+                border: Border.all(color: const Color(0xFFBDBDBD), width: 1.5),
+              ),
+              child: const Icon(Icons.add, color: Color(0xFF5A128C), size: 34),
+            ),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            'جدید',
+            maxLines: 1,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileHighlight extends StatelessWidget {
+  final IranaStory story;
+  final VoidCallback onTap;
+  final VoidCallback onDelete;
+
+  const _ProfileHighlight({
+    required this.story,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final file = File(story.filePath);
+    return SizedBox(
+      width: 94,
+      child: Column(
+        children: [
+          SizedBox(
+            width: 82,
+            height: 76,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 3,
+                  top: 0,
+                  child: InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.circular(40),
+                    child: Container(
+                      width: 76,
+                      height: 76,
+                      padding: const EdgeInsets.all(3),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFFFFD45E),
+                            Color(0xFFFFF3C1),
+                            Color(0xFFC58A22),
+                          ],
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: story.isVideo
+                            ? Container(
+                                color: const Color(0xFF3B126C),
+                                child: const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 30,
+                                ),
+                              )
+                            : (file.existsSync()
+                                ? Image.file(file, fit: BoxFit.cover)
+                                : const ColoredBox(
+                                    color: Color(0xFFEDE2F7),
+                                    child: Icon(Icons.broken_image),
+                                  )),
+                      ),
+                    ),
+                  ),
                 ),
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: Icon(
-                icon,
-                color: isNew ? Colors.white : const Color(0xFF5A128C),
-                size: 32,
-              ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Material(
+                    color: Colors.white,
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: onDelete,
+                      child: const Padding(
+                        padding: EdgeInsets.all(3),
+                        child: Icon(Icons.close, size: 15, color: Colors.red),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 5),
           Text(
-            title,
+            '${story.createdAt.day}/${story.createdAt.month}',
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
