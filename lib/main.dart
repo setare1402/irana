@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import 'notifications_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1139,8 +1140,14 @@ class _IranaHomeState extends State<IranaHome> {
                 ),
                 actions: [
                   IconButton(
-                    onPressed: () =>
-                        showMessage('اعلان‌ها در نسخه بعدی تکمیل می‌شوند'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const IranaNotificationsPage(),
+                        ),
+                      );
+                    },
                     icon: const Icon(
                       Icons.favorite_border,
                       color: Colors.black87,
