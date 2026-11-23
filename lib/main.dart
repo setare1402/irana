@@ -1194,18 +1194,21 @@ class _IranaHomeState extends State<IranaHome> {
             const DirectMessagesPage(),
           ],
         ),
-        bottomNavigationBar: NavigationBar(
+        bottomNavigationBar: BottomNavigationBar(
           backgroundColor: Colors.white,
-          selectedIndex: selectedIndex,
-          indicatorColor: iranaPurple.withOpacity(0.12),
-          onDestinationSelected: (index) {
+          type: BottomNavigationBarType.fixed,
+          currentIndex: selectedIndex,
+          selectedItemColor: iranaPurple,
+          unselectedItemColor: Colors.black54,
+          selectedFontSize: 11,
+          unselectedFontSize: 10,
+          onTap: (index) {
             setState(() => selectedIndex = index);
           },
-          destinations: List.generate(
+          items: List.generate(
             pages.length,
-            (index) => NavigationDestination(
+            (index) => BottomNavigationBarItem(
               icon: Icon(icons[index]),
-              selectedIcon: Icon(icons[index], color: iranaPurple),
               label: pages[index],
             ),
           ),
