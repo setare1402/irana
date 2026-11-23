@@ -2203,24 +2203,26 @@ class _ProfilePageState extends State<ProfilePage> {
                           top: 10,
                           left: 18,
                           right: 18,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Image.asset(
-                                    'assets/images/irana_brand_header.jpg',
-                                    width: 275,
-                                    height: 72,
-                                    fit: BoxFit.contain,
+                          child: Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Align(
                                     alignment: Alignment.centerLeft,
+                                    child: Image.asset(
+                                      'assets/images/irana_brand_header.jpg',
+                                      width: 205,
+                                      height: 58,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.centerLeft,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Column(
-                                children: [
+                                const SizedBox(width: 4),
+                                Column(
+                                  children: [
                                   IconButton(
                                     tooltip: 'انتشار محتوای جدید',
                                     onPressed: () {
@@ -2257,7 +2259,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                         const Positioned(
@@ -2332,9 +2334,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 Positioned(
-                  right: 24,
-                  top: 145,
-                  width: 210,
+                  right: 16,
+                  top: 128,
+                  width: 230,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -2368,26 +2370,37 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 12),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _BannerStat(
-                            value: widget.posts.length.toString(),
-                            label: 'پست‌ها',
+                          Expanded(
+                            child: _BannerStat(
+                              value: widget.posts.length.toString(),
+                              label: 'پست‌ها',
+                            ),
                           ),
                           Container(
                             width: 1,
-                            height: 48,
+                            height: 44,
                             color: Colors.white70,
                           ),
-                          const _BannerStat(value: '0', label: 'دنبال‌کننده'),
+                          const Expanded(
+                            child: _BannerStat(
+                              value: '0',
+                              label: 'دنبال‌کننده',
+                            ),
+                          ),
                           Container(
                             width: 1,
-                            height: 48,
+                            height: 44,
                             color: Colors.white70,
                           ),
-                          const _BannerStat(value: '0', label: 'دنبال‌شونده'),
+                          const Expanded(
+                            child: _BannerStat(
+                              value: '0',
+                              label: 'دنبال‌شونده',
+                            ),
+                          ),
                         ],
                       ),
                     ],
