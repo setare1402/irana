@@ -2344,8 +2344,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       Row(
                         children: [
                           Flexible(
-                            child: Text(
-                              username,
+                            child: const Text(
+                              'IRANA',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
