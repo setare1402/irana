@@ -228,6 +228,7 @@ class _IranaHomeState extends State<IranaHome> {
     'انتشار',
     'ویدئوها',
     'پروفایل',
+    'دایرکت',
   ];
 
   final List<IconData> icons = [
@@ -236,6 +237,7 @@ class _IranaHomeState extends State<IranaHome> {
     Icons.add_box_outlined,
     Icons.video_library_outlined,
     Icons.person_outline_rounded,
+    Icons.send_outlined,
   ];
 
   @override
@@ -1153,14 +1155,6 @@ class _IranaHomeState extends State<IranaHome> {
                       color: Colors.black87,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () =>
-                        showMessage('پیام‌ها در نسخه بعدی تکمیل می‌شوند'),
-                    icon: const Icon(
-                      Icons.send_outlined,
-                      color: Colors.black87,
-                    ),
-                  ),
                   const SizedBox(width: 5),
                 ],
               ),
@@ -1197,6 +1191,7 @@ class _IranaHomeState extends State<IranaHome> {
               onOpenHighlight: openStory,
               onRemoveHighlight: removeStoryFromHighlights,
             ),
+            const DirectMessagesPage(),
           ],
         ),
         bottomNavigationBar: NavigationBar(
@@ -1212,6 +1207,52 @@ class _IranaHomeState extends State<IranaHome> {
               icon: Icon(icons[index]),
               selectedIcon: Icon(icons[index], color: iranaPurple),
               label: pages[index],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- DIRECT MESSAGES ----------------
+
+class DirectMessagesPage extends StatelessWidget {
+  const DirectMessagesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: iranaBg,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.send_outlined,
+                  size: 58,
+                  color: iranaPurple,
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'دایرکت‌های ایرانا',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: iranaPurple,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'صندوق پیام‌ها در مرحله بعد تکمیل می‌شود.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey, height: 1.8),
+                ),
+              ],
             ),
           ),
         ),
