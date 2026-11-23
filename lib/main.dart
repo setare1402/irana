@@ -794,36 +794,79 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> addStoryToHighlights() async {
-    try {
-      // The plus button opens the gallery so the user can choose new media.
-      final file = await picker.pickMedia();
-      if (file == null || !mounted) return;
+    // فقط استوری‌هایی که قبلاً منتشر شده‌اند و هنوز ۲۴ ساعتشان تمام نشده.
+    final availableStories = stories
+        .where((story) =>
+            !story.expired && File(story.filePath).existsSync())
+        .toList();
 
-      final path = await copyMedia(file);
-      final now = DateTime.now();
-      final story = IranaStory(
-        id: now.microsecondsSinceEpoch.toString(),
-        username: 'irana_user',
-        filePath: path,
-        isVideo: isVideoFile(file),
-        createdAt: now,
-      );
-
-      // Publish the same selected media as a 24-hour story and a permanent highlight.
-      setState(() {
-        stories.insert(0, story);
-        highlightedStories.insert(0, story);
-      });
-      await saveData();
-
-      if (mounted) {
-        showMessage('استوری منتشر شد و هم‌زمان به هایلایت دائمی اضافه شد 💜');
-      }
-    } catch (_) {
-      if (mounted) {
-        showMessage('انتخاب یا انتشار استوری انجام نشد؛ دوباره تلاش کن');
-      }
+    if (availableStories.isEmpty) {
+      showMessage('ابتدا یک استوری منتشر کن؛ سپس می‌توانی آن را هایلایت کنی');
+      return;
     }
+
+    final selected = await showDialog<IranaStory>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('انتخاب استوری برای هایلایت'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: availableStories.length,
+              itemBuilder: (context, index) {
+                final story = availableStories[index];
+                final alreadyAdded =
+                    highlightedStories.any((item) => item.id == story.id);
+
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: story.isVideo
+                        ? null
+                        : FileImage(File(story.filePath)),
+                    child: story.isVideo
+                        ? const Icon(Icons.play_arrow)
+                        : null,
+                  ),
+                  title: Text('استوری ${index + 1}'),
+                  subtitle: Text(
+                    alreadyAdded ? 'قبلاً به هایلایت اضافه شده' : 'افزودن به هایلایت',
+                  ),
+                  trailing: alreadyAdded
+                      ? const Icon(Icons.check_circle, color: iranaPurple)
+                      : const Icon(Icons.add_circle_outline, color: iranaPurple),
+                  onTap: alreadyAdded
+                      ? null
+                      : () => Navigator.pop(dialogContext, story),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('انصراف'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (selected == null) return;
+
+    if (highlightedStories.any((item) => item.id == selected.id)) {
+      showMessage('این استوری قبلاً به هایلایت اضافه شده است');
+      return;
+    }
+
+    setState(() {
+      // فقط نسخه هایلایت ذخیره می‌شود؛ استوری تازه‌ای منتشر نمی‌شود.
+      highlightedStories.insert(0, selected);
+    });
+    await saveData();
+    showMessage('به هایلایت اضافه شد؛ پس از ۲۴ ساعت از نوار استوری حذف می‌شود 💜');
   }
 
   Future<void> removeStoryFromHighlights(IranaStory story) async {
