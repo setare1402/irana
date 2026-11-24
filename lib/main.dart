@@ -175,12 +175,14 @@ class IranaForward {
   final String postId;
   final String receiver;
   final DateTime date;
+  final bool isStory;
 
   IranaForward({
     required this.id,
     required this.postId,
     required this.receiver,
     required this.date,
+    this.isStory = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -188,6 +190,7 @@ class IranaForward {
         'postId': postId,
         'receiver': receiver,
         'date': date.toIso8601String(),
+        'isStory': isStory,
       };
 
   factory IranaForward.fromJson(Map<String, dynamic> j) => IranaForward(
@@ -195,6 +198,7 @@ class IranaForward {
         postId: j['postId'],
         receiver: j['receiver'],
         date: DateTime.parse(j['date']),
+        isStory: j['isStory'] ?? false,
       );
 }
 
@@ -220,6 +224,7 @@ class _IranaHomeState extends State<IranaHome> {
   List<String> reportedPostIds = [];
   List<String> hiddenPostIds = [];
   IranaPost? pendingForwardPost;
+  IranaStory? pendingForwardStory;
 
   final ImagePicker picker = ImagePicker();
 
@@ -793,7 +798,19 @@ class _IranaHomeState extends State<IranaHome> {
   void openStory(IranaStory story) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => StoryViewer(story: story)),
+      MaterialPageRoute(
+        builder: (_) => StoryViewer(
+          story: story,
+          onForward: () {
+            Navigator.pop(context);
+            setState(() {
+              pendingForwardPost = null;
+              pendingForwardStory = story;
+              selectedIndex = 5;
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -1069,23 +1086,27 @@ class _IranaHomeState extends State<IranaHome> {
 
   Future<void> sendForwardTo(String receiver) async {
     final post = pendingForwardPost;
+    final story = pendingForwardStory;
     final target = receiver.trim().replaceFirst(RegExp(r'^@'), '');
-    if (post == null || target.isEmpty) return;
+    if ((post == null && story == null) || target.isEmpty) return;
 
+    final sendingStory = story != null;
     setState(() {
       forwards.add(
         IranaForward(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
-          postId: post.id,
+          postId: sendingStory ? story.id : post!.id,
           receiver: target,
           date: DateTime.now(),
+          isStory: sendingStory,
         ),
       );
       pendingForwardPost = null;
+      pendingForwardStory = null;
     });
 
     await saveData();
-    showMessage('ارسال پست برای @$target در فهرست محلی ثبت شد');
+    showMessage('${sendingStory ? 'استوری' : 'پست'} برای @$target در فهرست محلی ثبت شد');
   }
 
   @override
@@ -1170,6 +1191,7 @@ class _IranaHomeState extends State<IranaHome> {
               posts: posts,
               forwards: forwards,
               pendingPost: pendingForwardPost,
+              pendingStory: pendingForwardStory,
               onSendPost: sendForwardTo,
             ),
           ],
@@ -1204,6 +1226,7 @@ class DirectMessagesPage extends StatefulWidget {
   final List<IranaPost> posts;
   final List<IranaForward> forwards;
   final IranaPost? pendingPost;
+  final IranaStory? pendingStory;
   final Future<void> Function(String) onSendPost;
 
   const DirectMessagesPage({
@@ -1211,6 +1234,7 @@ class DirectMessagesPage extends StatefulWidget {
     required this.posts,
     required this.forwards,
     required this.pendingPost,
+    required this.pendingStory,
     required this.onSendPost,
   });
 
@@ -1276,7 +1300,7 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
         ),
         body: Column(
           children: [
-            if (widget.pendingPost != null)
+            if (widget.pendingPost != null || widget.pendingStory != null)
               Container(
                 width: double.infinity,
                 margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -1291,7 +1315,9 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
-                        'انتخاب گیرنده برای ارسال این پست',
+                        widget.pendingStory != null
+                            ? 'انتخاب گیرنده برای ارسال این استوری'
+                            : 'انتخاب گیرنده برای ارسال این پست',
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -1299,7 +1325,7 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
                       onPressed: () {
                         // Keep the post selected until the user chooses a recipient.
                       },
-                      child: const Text('پست'),
+                      child: Text(widget.pendingStory != null ? 'استوری' : 'پست'),
                     ),
                   ],
                 ),
@@ -1785,7 +1811,12 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
 
 class StoryViewer extends StatefulWidget {
   final IranaStory story;
-  const StoryViewer({super.key, required this.story});
+  final VoidCallback onForward;
+  const StoryViewer({
+    super.key,
+    required this.story,
+    required this.onForward,
+  });
 
   @override
   State<StoryViewer> createState() => _StoryViewerState();
@@ -1821,6 +1852,13 @@ class _StoryViewerState extends State<StoryViewer> {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         title: Text(widget.story.username),
+        actions: [
+          IconButton(
+            tooltip: 'فوروارد استوری',
+            onPressed: widget.onForward,
+            icon: const Icon(Icons.send_outlined),
+          ),
+        ],
       ),
       body: Center(
         child: widget.story.isVideo
