@@ -219,6 +219,7 @@ class _IranaHomeState extends State<IranaHome> {
   List<String> savedPostIds = [];
   List<String> reportedPostIds = [];
   List<String> hiddenPostIds = [];
+  IranaPost? pendingForwardPost;
 
   final ImagePicker picker = ImagePicker();
 
@@ -1060,57 +1061,31 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> forwardPost(IranaPost post) async {
-    final receiverController = TextEditingController();
+    setState(() {
+      pendingForwardPost = post;
+      selectedIndex = 5;
+    });
+  }
 
-    final receiver = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          title: const Text('فوروارد پست'),
-          content: TextField(
-            controller: receiverController,
-            decoration: const InputDecoration(
-              labelText: 'نام کاربری گیرنده',
-              hintText: 'مثلاً user123',
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('انصراف'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final name = receiverController.text.trim();
-                if (name.isNotEmpty) {
-                  Navigator.pop(dialogContext, name);
-                }
-              },
-              child: const Text('ارسال'),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    receiverController.dispose();
-    if (receiver == null || receiver.isEmpty) return;
+  Future<void> sendForwardTo(String receiver) async {
+    final post = pendingForwardPost;
+    final target = receiver.trim().replaceFirst(RegExp(r'^@'), '');
+    if (post == null || target.isEmpty) return;
 
     setState(() {
       forwards.add(
         IranaForward(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
           postId: post.id,
-          receiver: receiver,
+          receiver: target,
           date: DateTime.now(),
         ),
       );
+      pendingForwardPost = null;
     });
 
     await saveData();
-    showMessage('فوروارد در فهرست محلی ثبت شد');
+    showMessage('ارسال پست برای @$target در فهرست محلی ثبت شد');
   }
 
   @override
@@ -1191,7 +1166,12 @@ class _IranaHomeState extends State<IranaHome> {
               onOpenHighlight: openStory,
               onRemoveHighlight: removeStoryFromHighlights,
             ),
-            const DirectMessagesPage(),
+            DirectMessagesPage(
+              posts: posts,
+              forwards: forwards,
+              pendingPost: pendingForwardPost,
+              onSendPost: sendForwardTo,
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -1220,44 +1200,211 @@ class _IranaHomeState extends State<IranaHome> {
 
 // ---------------- DIRECT MESSAGES ----------------
 
-class DirectMessagesPage extends StatelessWidget {
-  const DirectMessagesPage({super.key});
+class DirectMessagesPage extends StatefulWidget {
+  final List<IranaPost> posts;
+  final List<IranaForward> forwards;
+  final IranaPost? pendingPost;
+  final Future<void> Function(String) onSendPost;
+
+  const DirectMessagesPage({
+    super.key,
+    required this.posts,
+    required this.forwards,
+    required this.pendingPost,
+    required this.onSendPost,
+  });
+
+  @override
+  State<DirectMessagesPage> createState() => _DirectMessagesPageState();
+}
+
+class _DirectMessagesPageState extends State<DirectMessagesPage> {
+  final TextEditingController searchController = TextEditingController();
+  String query = '';
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final recentRecipients = <String>[];
+    for (final item in widget.forwards.reversed) {
+      if (!recentRecipients.contains(item.receiver)) {
+        recentRecipients.add(item.receiver);
+      }
+    }
+
+    final knownUsers = widget.posts
+        .map((post) => post.username)
+        .where((name) => name.isNotEmpty && name != 'irana_user')
+        .toSet()
+        .toList()
+      ..sort();
+
+    final normalizedQuery = query.trim().replaceFirst(RegExp(r'^@'), '').toLowerCase();
+    final filteredRecent = recentRecipients
+        .where((name) => name.toLowerCase().contains(normalizedQuery))
+        .toList();
+    final filteredUsers = knownUsers
+        .where((name) =>
+            name.toLowerCase().contains(normalizedQuery) &&
+            !recentRecipients.contains(name))
+        .toList();
+
+    Future<void> sendTo(String username) async {
+      await widget.onSendPost(username);
+      if (mounted) {
+        searchController.clear();
+        setState(() => query = '');
+      }
+    }
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: iranaBg,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.send_outlined,
-                  size: 58,
-                  color: iranaPurple,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: const Text(
+            'دایرکت‌ها',
+            style: TextStyle(color: iranaPurple, fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: Column(
+          children: [
+            if (widget.pendingPost != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDE2F7),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                const SizedBox(height: 14),
-                const Text(
-                  'دایرکت‌های ایرانا',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: iranaPurple,
+                child: Row(
+                  children: [
+                    const Icon(Icons.forward_to_inbox, color: iranaPurple),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'انتخاب گیرنده برای ارسال این پست',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        // Keep the post selected until the user chooses a recipient.
+                      },
+                      child: const Text('پست'),
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) => setState(() => query = value),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: 'جستجو با نام کاربری یا آیدی...',
+                  prefixIcon: const Icon(Icons.search, color: iranaPurple),
+                  suffixIcon: query.isEmpty
+                      ? null
+                      : IconButton(
+                          onPressed: () {
+                            searchController.clear();
+                            setState(() => query = '');
+                          },
+                          icon: const Icon(Icons.close),
+                        ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'صندوق پیام‌ها در مرحله بعد تکمیل می‌شود.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey, height: 1.8),
-                ),
-              ],
+              ),
             ),
-          ),
+            Expanded(
+              child: ListView(
+                children: [
+                  if (normalizedQuery.isNotEmpty &&
+                      filteredRecent.isEmpty &&
+                      filteredUsers.isEmpty)
+                    ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Color(0xFFEDE2F7),
+                        child: Icon(Icons.person_search, color: iranaPurple),
+                      ),
+                      title: Text('@${searchController.text.trim().replaceFirst(RegExp(r'^@'), '')}'),
+                      subtitle: const Text('ارسال به این آیدی'),
+                      trailing: const Icon(Icons.send, color: iranaPurple),
+                      onTap: () => sendTo(searchController.text),
+                    ),
+                  if (filteredRecent.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 6),
+                      child: Text(
+                        'گیرنده‌های اخیر',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: iranaPurple),
+                      ),
+                    ),
+                    ...filteredRecent.map(
+                      (name) => ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Color(0xFFEDE2F7),
+                          child: Icon(Icons.person, color: iranaPurple),
+                        ),
+                        title: Text('@$name'),
+                        subtitle: const Text('ارسال قبلی'),
+                        trailing: const Icon(Icons.send_outlined, color: iranaPurple),
+                        onTap: () => sendTo(name),
+                      ),
+                    ),
+                  ],
+                  if (filteredUsers.isNotEmpty) ...[
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 6),
+                      child: Text(
+                        'حساب‌های شناخته‌شده در این نسخه',
+                        style: TextStyle(fontWeight: FontWeight.bold, color: iranaPurple),
+                      ),
+                    ),
+                    ...filteredUsers.map(
+                      (name) => ListTile(
+                        leading: const CircleAvatar(
+                          backgroundColor: Color(0xFFEDE2F7),
+                          child: Icon(Icons.person_outline, color: iranaPurple),
+                        ),
+                        title: Text('@$name'),
+                        trailing: const Icon(Icons.send_outlined, color: iranaPurple),
+                        onTap: () => sendTo(name),
+                      ),
+                    ),
+                  ],
+                  if (normalizedQuery.isEmpty &&
+                      recentRecipients.isEmpty &&
+                      knownUsers.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(28),
+                      child: Center(
+                        child: Text(
+                          'هنوز گیرنده‌ای در این نسخه ثبت نشده است.\nبرای ارسال، آیدی شخص را در کادر جستجو وارد کن.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey, height: 1.8),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
