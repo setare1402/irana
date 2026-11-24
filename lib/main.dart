@@ -1531,84 +1531,103 @@ class _MediaVideoViewerState extends State<MediaVideoViewer> {
         foregroundColor: Colors.white,
         title: Text(widget.title),
       ),
-      body: Center(
-        child: FutureBuilder<void>(
-          future: initializeFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator(color: Colors.white);
-            }
-            if (snapshot.hasError) {
-              return const Text(
-                'پخش ویدئو امکان‌پذیر نیست',
-                style: TextStyle(color: Colors.white),
-              );
-            }
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          child: FutureBuilder<void>(
+            future: initializeFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+              if (snapshot.hasError) {
+                return const Center(
+                  child: Text(
+                    'پخش ویدئو امکان‌پذیر نیست',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              }
 
-            return ValueListenableBuilder<VideoPlayerValue>(
-              valueListenable: controller,
-              builder: (context, value, child) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AspectRatio(
-                      aspectRatio:
-                          value.aspectRatio == 0 ? 16 / 9 : value.aspectRatio,
-                      child: VideoPlayer(controller),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: VideoProgressIndicator(
-                        controller,
-                        allowScrubbing: true,
-                        colors: const VideoProgressColors(
-                          playedColor: iranaPink,
-                          bufferedColor: Colors.white38,
-                          backgroundColor: Colors.white24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          timeText(value.position),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        IconButton(
-                          color: Colors.white,
-                          iconSize: 48,
-                          onPressed: () {
-                            if (value.isPlaying) {
-                              controller.pause();
-                            } else {
-                              if (value.duration > Duration.zero &&
-                                  value.position >= value.duration) {
-                                controller.seekTo(Duration.zero);
-                              }
-                              controller.play();
-                            }
-                          },
-                          icon: Icon(
-                            value.isPlaying
-                                ? Icons.pause_circle
-                                : Icons.play_circle,
+              return ValueListenableBuilder<VideoPlayerValue>(
+                valueListenable: controller,
+                builder: (context, value, child) {
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: value.aspectRatio == 0
+                                ? 16 / 9
+                                : value.aspectRatio,
+                            child: VideoPlayer(controller),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          timeText(value.duration),
-                          style: const TextStyle(color: Colors.white),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: VideoProgressIndicator(
+                          controller,
+                          allowScrubbing: true,
+                          colors: const VideoProgressColors(
+                            playedColor: iranaPink,
+                            bufferedColor: Colors.white38,
+                            backgroundColor: Colors.white24,
+                          ),
                         ),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            );
-          },
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              timeText(value.position),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(width: 12),
+                            IconButton(
+                              color: Colors.white,
+                              iconSize: 48,
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(
+                                minWidth: 52,
+                                minHeight: 52,
+                              ),
+                              onPressed: () {
+                                if (value.isPlaying) {
+                                  controller.pause();
+                                } else {
+                                  if (value.duration > Duration.zero &&
+                                      value.position >= value.duration) {
+                                    controller.seekTo(Duration.zero);
+                                  }
+                                  controller.play();
+                                }
+                              },
+                              icon: Icon(
+                                value.isPlaying
+                                    ? Icons.pause_circle
+                                    : Icons.play_circle,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              timeText(value.duration),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
