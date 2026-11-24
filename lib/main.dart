@@ -1313,12 +1313,12 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
                   children: [
                     const Icon(Icons.forward_to_inbox, color: iranaPurple),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         widget.pendingStory != null
                             ? 'انتخاب گیرنده برای ارسال این استوری'
                             : 'انتخاب گیرنده برای ارسال این پست',
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
                     TextButton(
