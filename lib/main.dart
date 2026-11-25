@@ -9,8 +9,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'notifications_page.dart';
 
-void main() {
+final ValueNotifier<Locale> iranaLocale = ValueNotifier(const Locale('fa'));
+
+TextDirection get iranaTextDirection =>
+    iranaLocale.value.languageCode == 'en'
+        ? TextDirection.ltr
+        : TextDirection.rtl;
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final savedLanguage = prefs.getString('irana_language') ?? 'fa';
+  iranaLocale.value = Locale(savedLanguage);
   runApp(const IranaApp());
 }
 
@@ -24,16 +34,32 @@ class IranaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'IRANA',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: iranaBg,
-        colorScheme: ColorScheme.fromSeed(seedColor: iranaPurple),
-        fontFamily: 'Roboto',
-      ),
-      home: const IranaHome(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: iranaLocale,
+      builder: (context, locale, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'IRANA',
+          locale: locale,
+          supportedLocales: const [
+            Locale('fa'),
+            Locale('en'),
+            Locale('ar'),
+          ],
+          theme: ThemeData(
+            useMaterial3: true,
+            scaffoldBackgroundColor: iranaBg,
+            colorScheme: ColorScheme.fromSeed(seedColor: iranaPurple),
+            fontFamily: 'Roboto',
+          ),
+          home: Directionality(
+            textDirection: locale.languageCode == 'en'
+                ? TextDirection.ltr
+                : TextDirection.rtl,
+            child: const IranaHome(),
+          ),
+        );
+      },
     );
   }
 }
@@ -3532,7 +3558,7 @@ class IranaSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: iranaTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -3580,8 +3606,18 @@ class IranaSettingDetailPage extends StatefulWidget {
 class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   bool mainSwitch = true;
   bool secondSwitch = false;
-  String selectedOption = 'پیش‌فرض';
+  String selectedOption = 'فارسی';
   final TextEditingController textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    selectedOption = switch (iranaLocale.value.languageCode) {
+      'en' => 'English',
+      'ar' => 'العربية',
+      _ => 'فارسی',
+    };
+  }
 
   @override
   void dispose() {
@@ -3704,10 +3740,23 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
-                  onPressed: () {
-                    showMessage(
-                      'زبان انتخابی در این نسخه نمایشی ذخیره نشده است',
-                    );
+                  onPressed: () async {
+                    final languageCode = switch (selectedOption) {
+                      'English' => 'en',
+                      'العربية' => 'ar',
+                      _ => 'fa',
+                    };
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('irana_language', languageCode);
+                    iranaLocale.value = Locale(languageCode);
+                    if (!mounted) return;
+                    final message = switch (languageCode) {
+                      'en' => 'Language preference saved.',
+                      'ar' => 'تم حفظ اختيار اللغة.',
+                      _ => 'زبان انتخابی ذخیره شد.',
+                    };
+                    showMessage(message);
+                    setState(() {});
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: iranaPurple,
