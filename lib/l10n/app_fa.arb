@@ -1,0 +1,20 @@
+{
+  "@@locale": "fa",
+  "appName": "ایرانا",
+  "home": "خانه",
+  "search": "جستجو",
+  "create": "انتشار",
+  "videos": "ویدئوها",
+  "profile": "پروفایل",
+  "settings": "تنظیمات",
+  "language": "زبان",
+  "selectLanguage": "انتخاب زبان",
+  "persian": "فارسی",
+  "english": "انگلیسی",
+  "arabic": "عربی",
+  "cancel": "انصراف",
+  "save": "ذخیره",
+  "done": "انجام شد",
+  "error": "خطا",
+  "tryAgain": "دوباره تلاش کنید"
+}
