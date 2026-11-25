@@ -15,19 +15,10 @@ const Map<String, String> iranaLanguageNames = {
   'fa': 'فارسی',
   'en': 'English',
   'ar': 'العربية',
-  'tr': 'Türkçe',
-  'az': 'Azərbaycanca',
-  'ru': 'Русский',
-  'fr': 'Français',
-  'de': 'Deutsch',
-  'es': 'Español',
-  'zh': '中文',
-  'ur': 'اردو',
-  'hi': 'हिन्दी',
 };
 
 TextDirection directionForLanguage(String code) =>
-    const {'fa', 'ar', 'ur'}.contains(code)
+    const {'fa', 'ar'}.contains(code)
         ? TextDirection.rtl
         : TextDirection.ltr;
 
@@ -59,9 +50,11 @@ class IranaApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'IRANA',
           locale: locale,
-          supportedLocales: iranaLanguageNames.keys
-              .map((code) => Locale(code))
-              .toList(),
+          supportedLocales: const [
+            Locale('fa'),
+            Locale('en'),
+            Locale('ar'),
+          ],
           theme: ThemeData(
             useMaterial3: true,
             scaffoldBackgroundColor: iranaBg,
@@ -3626,7 +3619,11 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   @override
   void initState() {
     super.initState();
-    selectedOption = iranaLocale.value.languageCode;
+    selectedOption = switch (iranaLocale.value.languageCode) {
+      'en' => 'English',
+      'ar' => 'العربية',
+      _ => 'فارسی',
+    };
   }
 
   @override
@@ -3744,24 +3741,27 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
             ] else if (title == 'زبان و ترجمه‌ها') ...[
-              for (final language in iranaLanguageNames.entries)
-                optionTile(language.value, language.key),
+              optionTile('فارسی', 'فارسی'),
+              optionTile('English', 'English'),
+              optionTile('العربية', 'العربية'),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: () async {
-                    final languageCode = selectedOption;
+                    final languageCode = switch (selectedOption) {
+                      'English' => 'en',
+                      'العربية' => 'ar',
+                      _ => 'fa',
+                    };
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setString('irana_language', languageCode);
                     iranaLocale.value = Locale(languageCode);
                     if (!mounted) return;
-                    final message = languageCode == 'en'
-                        ? 'Language preference saved.'
-                        : languageCode == 'ar'
-                            ? 'تم حفظ اختيار اللغة.'
-                            : languageCode == 'fa'
-                                ? 'زبان انتخابی ذخیره شد.'
-                                : 'Language preference saved.';
+                    final message = switch (languageCode) {
+                      'en' => 'Language preference saved.',
+                      'ar' => 'تم حفظ اختيار اللغة.',
+                      _ => 'زبان انتخابی ذخیره شد.',
+                    };
                     showMessage(message);
                     setState(() {});
                   },
