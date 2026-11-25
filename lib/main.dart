@@ -27,10 +27,19 @@ TextDirection get iranaTextDirection =>
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final savedLanguage = prefs.getString('irana_language') ?? 'fa';
-  iranaLocale.value = Locale(savedLanguage);
+
+  // Start the app immediately; loading a saved language must not block startup.
   runApp(const IranaApp());
+
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLanguage = prefs.getString('irana_language') ?? 'fa';
+    if (iranaLanguageNames.containsKey(savedLanguage)) {
+      iranaLocale.value = Locale(savedLanguage);
+    }
+  } catch (_) {
+    // Keep the default Persian locale if saved settings cannot be read.
+  }
 }
 
 const Color iranaPurple = Color(0xFF7139A8);
