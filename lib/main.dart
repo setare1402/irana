@@ -2014,13 +2014,13 @@ class PostCard extends StatelessWidget {
                 IconButton(
                   onPressed: onComments,
                   icon: Icon(
-                    Icons.chat_bubble_outline_rounded,
+                    Icons.mode_comment_outlined,
                     color: post.commentsEnabled ? Colors.black87 : Colors.grey,
                   ),
                 ),
                 IconButton(
                   onPressed: onForward,
-                  icon: const Icon(Icons.forward_rounded),
+                  icon: const Icon(Icons.repeat_rounded),
                 ),
                 const Spacer(),
                 IconButton(
