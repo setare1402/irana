@@ -1570,6 +1570,7 @@ class FeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = lookupAppLocalizations(iranaLocale.value);
     final visiblePosts =
         posts.where((p) => !hiddenPostIds.contains(p.id)).toList();
 
@@ -1579,7 +1580,7 @@ class FeedPage extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'استوری‌ها',
+            strings.stories,
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ),
@@ -1592,7 +1593,7 @@ class FeedPage extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: onAddStory,
-                child: const StoryItem(name: 'استوری من', own: true),
+                child: StoryItem(name: strings.myStory, own: true),
               ),
               ...stories.map(
                 (story) => GestureDetector(
@@ -1613,7 +1614,7 @@ class FeedPage extends StatelessWidget {
             padding: EdgeInsets.all(35),
             child: Center(
               child: Text(
-                'هنوز پستی منتشر نشده است.\nاولین پست ایرانا را منتشر کن 💜',
+                strings.emptyFeed,
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),

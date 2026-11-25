@@ -17,5 +17,8 @@
   "done": "Done",
   "error": "Error",
   "tryAgain": "Please try again",
-  "direct": "Messages"
+  "direct": "Messages",
+  "stories": "Stories",
+  "myStory": "My story",
+  "emptyFeed": "No posts have been published yet.\\nShare the first IRANA post 💜"
 }
