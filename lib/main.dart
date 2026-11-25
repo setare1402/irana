@@ -2013,14 +2013,19 @@ class PostCard extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: onComments,
+                  tooltip: 'دیدگاه‌ها',
                   icon: Icon(
-                    Icons.mode_comment_outlined,
-                    color: post.commentsEnabled ? Colors.black87 : Colors.grey,
+                    Icons.mode_comment_rounded,
+                    color: post.commentsEnabled ? iranaPurple : Colors.grey,
                   ),
                 ),
                 IconButton(
                   onPressed: onForward,
-                  icon: const Icon(Icons.send_outlined),
+                  tooltip: 'فوروارد',
+                  icon: const Icon(
+                    Icons.forward_rounded,
+                    color: iranaPink,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
