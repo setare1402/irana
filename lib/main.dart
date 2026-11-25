@@ -25,8 +25,42 @@ TextDirection directionForLanguage(String code) =>
 TextDirection get iranaTextDirection =>
     directionForLanguage(iranaLocale.value.languageCode);
 
+Widget _iranaDiagnosticErrorWidget(FlutterErrorDetails details) {
+  final errorText = '${details.exceptionAsString()}\n\n${details.stack ?? ''}';
+  return Directionality(
+    textDirection: TextDirection.rtl,
+    child: Material(
+      color: Colors.white,
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(18),
+          children: [
+            const Text(
+              'ایرانا هنگام نمایش این بخش با خطا روبه‌رو شد',
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text('متن خطا را برای بررسی نگه دار:'),
+            const SizedBox(height: 10),
+            SelectableText(
+              errorText,
+              textDirection: TextDirection.ltr,
+              style: const TextStyle(fontSize: 12, color: Colors.black87),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  ErrorWidget.builder = _iranaDiagnosticErrorWidget;
 
   // Start the app immediately; loading a saved language must not block startup.
   runApp(const IranaApp());
