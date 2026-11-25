@@ -1,0 +1,20 @@
+{
+  "@@locale": "en",
+  "appName": "IRANA",
+  "home": "Home",
+  "search": "Search",
+  "create": "Create",
+  "videos": "Videos",
+  "profile": "Profile",
+  "settings": "Settings",
+  "language": "Language",
+  "selectLanguage": "Select language",
+  "persian": "Persian",
+  "english": "English",
+  "arabic": "Arabic",
+  "cancel": "Cancel",
+  "save": "Save",
+  "done": "Done",
+  "error": "Error",
+  "tryAgain": "Please try again"
+}
