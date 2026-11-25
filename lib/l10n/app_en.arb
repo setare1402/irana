@@ -16,5 +16,6 @@
   "save": "Save",
   "done": "Done",
   "error": "Error",
-  "tryAgain": "Please try again"
+  "tryAgain": "Please try again",
+  "direct": "Messages"
 }
