@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'notifications_page.dart';
+import 'package:irana/l10n/app_localizations.dart';
 
 final ValueNotifier<Locale> iranaLocale = ValueNotifier(const Locale('fa'));
 
@@ -312,14 +313,17 @@ class _IranaHomeState extends State<IranaHome> {
 
   final ImagePicker picker = ImagePicker();
 
-  final List<String> pages = [
-    'خانه',
-    'جستجو',
-    'انتشار',
-    'ویدئوها',
-    'پروفایل',
-    'دایرکت',
-  ];
+  List<String> get pages {
+    final strings = lookupAppLocalizations(iranaLocale.value);
+    return [
+      strings.home,
+      strings.search,
+      strings.create,
+      strings.videos,
+      strings.profile,
+      strings.direct,
+    ];
+  }
 
   final List<IconData> icons = [
     Icons.home_rounded,
@@ -1213,7 +1217,7 @@ class _IranaHomeState extends State<IranaHome> {
     }
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: iranaTextDirection,
       child: Scaffold(
         appBar: selectedIndex == 4
             ? null
@@ -3726,10 +3730,14 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title = widget.item.title;
+    final isLanguageSettings = widget.item.title == 'زبان و ترجمه‌ها';
+    final strings = lookupAppLocalizations(iranaLocale.value);
+    final title = isLanguageSettings && iranaLocale.value.languageCode == 'en'
+        ? strings.language
+        : widget.item.title;
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: iranaTextDirection,
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -3800,7 +3808,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 value: secondSwitch,
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
-            ] else if (title == 'زبان و ترجمه‌ها') ...[
+            ] else if (isLanguageSettings) ...[
               optionTile('فارسی', 'فارسی'),
               optionTile('English', 'English'),
               optionTile('العربية', 'العربية'),
@@ -3829,7 +3837,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                     backgroundColor: iranaPurple,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('ثبت انتخاب'),
+                  child: Text(strings.save),
                 ),
               ),
             ] else if (title == 'مصرف داده و کیفیت رسانه') ...[
