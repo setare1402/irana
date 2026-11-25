@@ -304,6 +304,7 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> loadData() async {
+    try {
     final prefs = await SharedPreferences.getInstance();
 
     try {
@@ -353,7 +354,15 @@ class _IranaHomeState extends State<IranaHome> {
     } catch (_) {}
 
     await saveData();
-    if (mounted) setState(() => loading = false);
+
+    } catch (error, stackTrace) {
+      debugPrint('IRANA loadData error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
+    }
   }
 
   Future<void> saveData() async {
