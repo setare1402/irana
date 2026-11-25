@@ -11,10 +11,28 @@ import 'notifications_page.dart';
 
 final ValueNotifier<Locale> iranaLocale = ValueNotifier(const Locale('fa'));
 
+const Map<String, String> iranaLanguageNames = {
+  'fa': 'فارسی',
+  'en': 'English',
+  'ar': 'العربية',
+  'tr': 'Türkçe',
+  'az': 'Azərbaycanca',
+  'ru': 'Русский',
+  'fr': 'Français',
+  'de': 'Deutsch',
+  'es': 'Español',
+  'zh': '中文',
+  'ur': 'اردو',
+  'hi': 'हिन्दी',
+};
+
+TextDirection directionForLanguage(String code) =>
+    const {'fa', 'ar', 'ur'}.contains(code)
+        ? TextDirection.rtl
+        : TextDirection.ltr;
+
 TextDirection get iranaTextDirection =>
-    iranaLocale.value.languageCode == 'en'
-        ? TextDirection.ltr
-        : TextDirection.rtl;
+    directionForLanguage(iranaLocale.value.languageCode);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +59,9 @@ class IranaApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'IRANA',
           locale: locale,
-          supportedLocales: const [
-            Locale('fa'),
-            Locale('en'),
-            Locale('ar'),
-          ],
+          supportedLocales: iranaLanguageNames.keys
+              .map((code) => Locale(code))
+              .toList(),
           theme: ThemeData(
             useMaterial3: true,
             scaffoldBackgroundColor: iranaBg,
@@ -53,9 +69,7 @@ class IranaApp extends StatelessWidget {
             fontFamily: 'Roboto',
           ),
           home: Directionality(
-            textDirection: locale.languageCode == 'en'
-                ? TextDirection.ltr
-                : TextDirection.rtl,
+            textDirection: directionForLanguage(locale.languageCode),
             child: const IranaHome(),
           ),
         );
@@ -3612,11 +3626,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   @override
   void initState() {
     super.initState();
-    selectedOption = switch (iranaLocale.value.languageCode) {
-      'en' => 'English',
-      'ar' => 'العربية',
-      _ => 'فارسی',
-    };
+    selectedOption = iranaLocale.value.languageCode;
   }
 
   @override
@@ -3734,27 +3744,24 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
             ] else if (title == 'زبان و ترجمه‌ها') ...[
-              optionTile('فارسی', 'فارسی'),
-              optionTile('English', 'English'),
-              optionTile('العربية', 'العربية'),
+              for (final language in iranaLanguageNames.entries)
+                optionTile(language.value, language.key),
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: () async {
-                    final languageCode = switch (selectedOption) {
-                      'English' => 'en',
-                      'العربية' => 'ar',
-                      _ => 'fa',
-                    };
+                    final languageCode = selectedOption;
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setString('irana_language', languageCode);
                     iranaLocale.value = Locale(languageCode);
                     if (!mounted) return;
-                    final message = switch (languageCode) {
-                      'en' => 'Language preference saved.',
-                      'ar' => 'تم حفظ اختيار اللغة.',
-                      _ => 'زبان انتخابی ذخیره شد.',
-                    };
+                    final message = languageCode == 'en'
+                        ? 'Language preference saved.'
+                        : languageCode == 'ar'
+                            ? 'تم حفظ اختيار اللغة.'
+                            : languageCode == 'fa'
+                                ? 'زبان انتخابی ذخیره شد.'
+                                : 'Language preference saved.';
                     showMessage(message);
                     setState(() {});
                   },
