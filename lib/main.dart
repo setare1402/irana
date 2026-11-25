@@ -99,11 +99,13 @@ class IranaApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
+          // Use English for Flutter's built-in Material labels.
+          // The selected app language still controls IRANA's text direction.
           supportedLocales: const [
-            Locale('fa'),
             Locale('en'),
-            Locale('ar'),
           ],
+          localeResolutionCallback: (deviceLocale, supportedLocales) =>
+              const Locale('en'),
           theme: ThemeData(
             useMaterial3: true,
             scaffoldBackgroundColor: iranaBg,
