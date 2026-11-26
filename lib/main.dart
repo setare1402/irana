@@ -1577,8 +1577,8 @@ class FeedPage extends StatelessWidget {
     return ListView(
       children: [
         const SizedBox(height: 12),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             strings.stories,
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
@@ -1610,8 +1610,8 @@ class FeedPage extends StatelessWidget {
         ),
         const Divider(height: 20),
         if (visiblePosts.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(35),
+          Padding(
+            padding: const EdgeInsets.all(35),
             child: Center(
               child: Text(
                 strings.emptyFeed,
