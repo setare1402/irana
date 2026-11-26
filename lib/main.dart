@@ -1514,7 +1514,7 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
                 onChanged: (value) => setState(() => query = value),
                 textInputAction: TextInputAction.search,
                 decoration: InputDecoration(
-                  hintText: 'جستجو با نام کاربری یا آیدی...',
+                  hintText: lookupAppLocalizations(iranaLocale.value).searchUserHint,
                   prefixIcon: const Icon(Icons.search, color: iranaPurple),
                   suffixIcon: query.isEmpty
                       ? null
@@ -2473,11 +2473,11 @@ class VideosPage extends StatelessWidget {
             Icon(Icons.play_circle_outline, size: 90, color: iranaPurple),
             SizedBox(height: 16),
             Text(
-              'ویدئوهای ایرانا',
+              lookupAppLocalizations(iranaLocale.value).videosTitle,
               style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            Text('هنوز ویدئویی منتشر نشده است'),
+            Text(lookupAppLocalizations(iranaLocale.value).noVideosPublished),
           ],
         ),
       );
@@ -2494,7 +2494,7 @@ class VideosPage extends StatelessWidget {
             ),
             title: Text(video.username),
             subtitle: Text(
-              video.caption.isEmpty ? 'ویدئوی ایرانا' : video.caption,
+              video.caption.isEmpty ? lookupAppLocalizations(iranaLocale.value).videoByIrana : video.caption,
             ),
             onTap: () => onOpenVideo(video),
           ),
@@ -2507,7 +2507,7 @@ class VideosPage extends StatelessWidget {
               size: 40,
             ),
             title: Text(video.username),
-            subtitle: const Text('ویدئوی استوری'),
+            subtitle: Text(lookupAppLocalizations(iranaLocale.value).storyVideoLabel),
             onTap: () => onOpenStory(video),
           ),
         ),
@@ -2541,7 +2541,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final ImagePicker picker = ImagePicker();
 
-  String profileName = 'کاربر ایرانا';
+  String profileName = '';
   String username = 'irana_user';
   String bio = 'به خانواده بزرگ ایرانا خوش آمدید 💜';
   String avatarPath = '';
@@ -2558,7 +2558,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) return;
 
     setState(() {
-      profileName = prefs.getString('irana_profile_name') ?? 'کاربر ایرانا';
+      profileName = prefs.getString('irana_profile_name') ?? lookupAppLocalizations(iranaLocale.value).defaultProfileName;
       username = prefs.getString('irana_profile_username') ?? 'irana_user';
       bio = prefs.getString('irana_profile_bio') ??
           'به خانواده بزرگ ایرانا خوش آمدید 💜';
@@ -3037,13 +3037,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'اشتراک‌گذاری پروفایل در نسخه بعدی فعال می‌شود',
+                            lookupAppLocalizations(iranaLocale.value).shareProfileComingSoon,
                           ),
                         ),
                       );
                     },
                     icon: const Icon(Icons.share_rounded, size: 19),
-                    label: const Text('اشتراک‌گذاری پروفایل'),
+                    label: Text(lookupAppLocalizations(iranaLocale.value).shareProfile),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF4C087D),
                       side: const BorderSide(
@@ -3066,12 +3066,12 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Row(
               children: [
                 const Text(
-                  'هایلایت‌ها',
+                  lookupAppLocalizations(iranaLocale.value).highlights,
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                 ),
                 const Spacer(),
                 Text(
-                  'داستان‌های منتخب',
+                  lookupAppLocalizations(iranaLocale.value).selectedStories,
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 11,
@@ -3134,7 +3134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.grey,
                   ),
                   SizedBox(height: 10),
-                  Text('هنوز پستی منتشر نکرده‌ای'),
+                  Text(lookupAppLocalizations(iranaLocale.value).noPostsYet),
                 ],
               ),
             )
@@ -3219,7 +3219,7 @@ class _ProfileAddHighlight extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             const Text(
-              'جدید',
+              lookupAppLocalizations(iranaLocale.value).newHighlight,
               maxLines: 1,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
