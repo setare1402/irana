@@ -27,6 +27,48 @@ TextDirection directionForLanguage(String code) =>
 TextDirection get iranaTextDirection =>
     directionForLanguage(iranaLocale.value.languageCode);
 
+String localizeSettingsText(AppLocalizations strings, String value) => switch (value) {
+    'پست کردن هم‌زمان' => strings.settingsPostTogether,
+    'مسدودشده‌ها' => strings.settingsBlocked,
+    'پنهان کردن داستان و پخش زنده' => strings.settingsHideStoriesLive,
+    'فعالیت در فهرست دوستان' => strings.settingsFriendsActivity,
+    'پیام‌ها و پاسخ‌ها به داستان' => strings.settingsMessagesReplies,
+    'نشان‌ها و ذکر نام‌ها' => strings.settingsMentionsTags,
+    'نظرات' => strings.settingsComments,
+    'اشتراک‌گذاری' => strings.settingsSharing,
+    'محدودشده‌ها' => strings.settingsRestricted,
+    'محدود کردن تعاملات' => strings.settingsLimitInteractions,
+    'کلمات پنهان‌شده' => strings.settingsHiddenWords,
+    'دنبال کردن و دعوت از دوستان' => strings.settingsFollowInvite,
+    'موارد دلخواه' => strings.settingsFavorites,
+    'حساب‌های بی‌صداشده' => strings.settingsMutedAccounts,
+    'اولویت‌های محتوا' => strings.settingsContentPreferences,
+    'تعداد پسندیدن‌ها و اشتراک‌گذاری‌ها' => strings.settingsLikeShareCounts,
+    'حساب Meta' => strings.settingsMetaAccount,
+    'ذخیره‌شده' => strings.settingsSaved,
+    'بایگانی' => strings.settingsArchive,
+    'فعالیت شما' => strings.settingsYourActivity,
+    'اعلان‌ها' => strings.settingsNotifications,
+    'مدیریت زمان' => strings.settingsTimeManagement,
+    'Instagram ویژه رایانه لوحی' => strings.settingsTablet,
+    'Meta Verified' => strings.settingsMetaVerified,
+    'حریم خصوصی حساب' => strings.settingsAccountPrivacy,
+    'دوستان صمیمی' => strings.settingsCloseFriends,
+    'مجوزهای دستگاه' => strings.settingsDevicePermissions,
+    'بایگانی کردن و دانلود کردن' => strings.settingsArchiveDownload,
+    'دسترس‌پذیری' => strings.settingsAccessibility,
+    'زبان و ترجمه‌ها' => strings.settingsLanguageTranslation,
+    'مصرف داده و کیفیت رسانه' => strings.settingsDataMedia,
+    'مجوزهای وب‌سایت' => strings.settingsWebsitePermissions,
+    'نظرات در «حساب‌های نه‌چندان...»' => strings.settingsAccountComments,
+    'نحوه تعامل شما با دیگران' => strings.settingsSectionInteractions,
+    'آنچه می‌بینید' => strings.settingsSectionSee,
+    'حساب و تنظیمات' => strings.settingsSectionAccount,
+    'برنامه و رسانه‌های شما' => strings.settingsSectionAppMedia,
+    'تنظیمات و فعالیت' => strings.settingsAndActivity,
+    _ => value,
+  };
+
 Widget _iranaDiagnosticErrorWidget(FlutterErrorDetails details) {
   final errorText = '${details.exceptionAsString()}\n\n${details.stack ?? ''}';
   return Directionality(
@@ -3605,11 +3647,12 @@ class IranaSettingsPage extends StatelessWidget {
     );
   }
 
-  Widget sectionTitle(String title) {
+  Widget sectionTitle(BuildContext context, String title) {
+    final strings = lookupAppLocalizations(iranaLocale.value);
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 22, 18, 10),
       child: Text(
-        title,
+        localizeSettingsText(strings, title),
         style: const TextStyle(
           color: Colors.grey,
           fontSize: 14,
@@ -3620,11 +3663,12 @@ class IranaSettingsPage extends StatelessWidget {
   }
 
   Widget menuTile(BuildContext context, IranaMenuItem item) {
+    final strings = lookupAppLocalizations(iranaLocale.value);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 3),
       leading: Icon(item.icon, color: Colors.black87, size: 26),
       title: Text(
-        item.title,
+        localizeSettingsText(strings, item.title),
         style: const TextStyle(fontSize: 15, color: Colors.black87),
       ),
       trailing: const Icon(Icons.chevron_left, color: Colors.grey),
@@ -3643,22 +3687,22 @@ class IranaSettingsPage extends StatelessWidget {
           elevation: 0,
           foregroundColor: Colors.black,
           title: const Text(
-            'تنظیمات و فعالیت',
+            localizeSettingsText(lookupAppLocalizations(iranaLocale.value), 'تنظیمات و فعالیت'),
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
         ),
         body: ListView(
           children: [
-            sectionTitle('نحوه تعامل شما با دیگران'),
+            sectionTitle(context, 'نحوه تعامل شما با دیگران'),
             ...menuItems.take(12).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
-            sectionTitle('آنچه می‌بینید'),
+            sectionTitle(context, 'آنچه می‌بینید'),
             ...menuItems.skip(12).take(5).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
-            sectionTitle('حساب و تنظیمات'),
+            sectionTitle(context, 'حساب و تنظیمات'),
             ...menuItems.skip(17).take(7).map((item) => menuTile(context, item)),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
-            sectionTitle('برنامه و رسانه‌های شما'),
+            sectionTitle(context, 'برنامه و رسانه‌های شما'),
             ...menuItems.skip(24).map((item) => menuTile(context, item)),
             const SizedBox(height: 30),
           ],
@@ -3736,11 +3780,12 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isLanguageSettings = widget.item.title == 'زبان و ترجمه‌ها';
+    final rawTitle = widget.item.title;
+    final isLanguageSettings = rawTitle == 'زبان و ترجمه‌ها';
     final strings = lookupAppLocalizations(iranaLocale.value);
-    final title = isLanguageSettings && iranaLocale.value.languageCode == 'en'
+    final title = isLanguageSettings
         ? strings.language
-        : widget.item.title;
+        : localizeSettingsText(strings, rawTitle);
 
     return Directionality(
       textDirection: iranaTextDirection,
@@ -3782,7 +3827,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    widget.item.description,
+                    localizeSettingsText(strings, widget.item.description),
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.grey, height: 1.8),
                   ),
@@ -3790,7 +3835,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
               ),
             ),
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
-            if (title == 'حریم خصوصی حساب') ...[
+            if (rawTitle == 'حریم خصوصی حساب') ...[
               settingSwitch(
                 title: 'حساب خصوصی',
                 value: mainSwitch,
@@ -3803,7 +3848,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   style: TextStyle(color: Colors.grey, height: 1.7),
                 ),
               ),
-            ] else if (title == 'اعلان‌ها') ...[
+            ] else if (rawTitle == 'اعلان‌ها') ...[
               settingSwitch(
                 title: 'فعال‌بودن اعلان‌ها',
                 value: mainSwitch,
@@ -3846,11 +3891,11 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   child: Text(strings.save),
                 ),
               ),
-            ] else if (title == 'مصرف داده و کیفیت رسانه') ...[
+            ] else if (rawTitle == 'مصرف داده و کیفیت رسانه') ...[
               optionTile('کیفیت خودکار', 'پیش‌فرض'),
               optionTile('کیفیت بالا', 'کیفیت بالا'),
               optionTile('صرفه‌جویی در مصرف داده', 'صرفه‌جویی'),
-            ] else if (title == 'مدیریت زمان') ...[
+            ] else if (rawTitle == 'مدیریت زمان') ...[
               settingSwitch(
                 title: 'یادآوری زمان استفاده',
                 value: mainSwitch,
@@ -3860,7 +3905,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 title: Text('مدت‌زمان روزانه'),
                 subtitle: Text('بعداً امکان تعیین محدودیت زمانی اضافه می‌شود'),
               ),
-            ] else if (title == 'کلمات پنهان‌شده') ...[
+            ] else if (rawTitle == 'کلمات پنهان‌شده') ...[
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextField(
@@ -3890,7 +3935,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   child: const Text('افزودن کلمه'),
                 ),
               ),
-            ] else if (title == 'نظرات') ...[
+            ] else if (rawTitle == 'نظرات') ...[
               settingSwitch(
                 title: 'اجازه دریافت نظر',
                 value: mainSwitch,
@@ -3901,7 +3946,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 value: secondSwitch,
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
-            ] else if (title == 'دوستان صمیمی') ...[
+            ] else if (rawTitle == 'دوستان صمیمی') ...[
               const ListTile(
                 leading: Icon(Icons.people_outline),
                 title: Text('فهرست دوستان صمیمی'),
@@ -3909,7 +3954,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.',
                 ),
               ),
-            ] else if (title == 'مجوزهای دستگاه') ...[
+            ] else if (rawTitle == 'مجوزهای دستگاه') ...[
               const ListTile(
                 leading: Icon(Icons.photo_outlined),
                 title: Text('دسترسی به عکس‌ها و ویدئوها'),
@@ -3920,7 +3965,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 title: Text('دوربین'),
                 subtitle: Text('در صورت نیاز به قابلیت عکس‌برداری'),
               ),
-            ] else if (title == 'ذخیره‌شده') ...[
+            ] else if (rawTitle == 'ذخیره‌شده') ...[
               const ListTile(
                 leading: Icon(Icons.bookmark_border),
                 title: Text('محتوای ذخیره‌شده'),
@@ -3928,7 +3973,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.',
                 ),
               ),
-            ] else if (title == 'بایگانی') ...[
+            ] else if (rawTitle == 'بایگانی') ...[
               const ListTile(
                 leading: Icon(Icons.archive_outlined),
                 title: Text('بایگانی محتوا'),
@@ -3936,7 +3981,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   'در این نسخه هنوز محتوایی به بایگانی منتقل نمی‌شود.',
                 ),
               ),
-            ] else if (title == 'فعالیت شما') ...[
+            ] else if (rawTitle == 'فعالیت شما') ...[
               const ListTile(
                 leading: Icon(Icons.favorite_border),
                 title: Text('فعالیت‌ها'),
@@ -3944,7 +3989,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                   'سوابق پسندیدن، نظرها و تعاملات در نسخه بعدی نمایش داده می‌شود.',
                 ),
               ),
-            ] else if (title == 'موارد دلخواه') ...[
+            ] else if (rawTitle == 'موارد دلخواه') ...[
               const ListTile(
                 leading: Icon(Icons.star_border),
                 title: Text('فهرست موارد دلخواه'),
