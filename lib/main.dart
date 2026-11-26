@@ -96,6 +96,7 @@ class IranaApp extends StatelessWidget {
           title: 'IRANA',
           locale: locale,
           localizationsDelegates: const [
+            AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
