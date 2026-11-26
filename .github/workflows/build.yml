@@ -65,9 +65,9 @@ jobs:
           from pathlib import Path
           p = Path('pubspec.yaml')
           s = p.read_text()
-          old = '  ios: true\\n'
+          old = '  ios: true'
           assert s.count(old) == 1, 'Expected exactly one iOS icon setting'
-          p.write_text(s.replace(old, '  ios: false\\n', 1))
+          p.write_text(s.replace(old, '  ios: false', 1))
           PY
           dart run flutter_launcher_icons
 
@@ -118,9 +118,9 @@ jobs:
           from pathlib import Path
           p = Path('pubspec.yaml')
           s = p.read_text()
-          old = '  android: true\\n'
+          old = '  android: true'
           assert s.count(old) == 1, 'Expected exactly one Android icon setting'
-          p.write_text(s.replace(old, '  android: false\\n', 1))
+          p.write_text(s.replace(old, '  android: false', 1))
           PY
           dart run flutter_launcher_icons
 
