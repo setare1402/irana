@@ -66,6 +66,39 @@ String localizeSettingsText(AppLocalizations strings, String value) => switch (v
     'حساب و تنظیمات' => strings.settingsSectionAccount,
     'برنامه و رسانه‌های شما' => strings.settingsSectionAppMedia,
     'تنظیمات و فعالیت' => strings.settingsAndActivity,
+    'حساب خصوصی' => strings.settingPrivateAccount,
+    localizeSettingsText(strings, 'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.') => strings.settingPrivacyNote,
+    'فعال‌بودن اعلان‌ها' => strings.settingNotificationsEnabled,
+    'اعلان پیام‌ها' => strings.settingMessageNotifications,
+    'کیفیت خودکار' => strings.settingAutoQuality,
+    'پیش‌فرض' => strings.settingDefaultQuality,
+    'کیفیت بالا' => strings.settingHighQuality,
+    'صرفه‌جویی در مصرف داده' => strings.settingDataSaver,
+    'یادآوری زمان استفاده' => strings.settingTimeReminder,
+    'مدت‌زمان روزانه' => strings.settingDailyDuration,
+    'بعداً امکان تعیین محدودیت زمانی اضافه می‌شود' => strings.settingTimeLimitLater,
+    'افزودن کلمه یا عبارت' => strings.settingAddHiddenWord,
+    'ابتدا یک کلمه وارد کن' => strings.settingEnterWordFirst,
+    'ثبت کلمه در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود' => strings.settingHiddenWordLater,
+    'افزودن کلمه' => strings.settingAddWord,
+    'اجازه دریافت نظر' => strings.settingAllowComments,
+    'فیلتر نظرات نامناسب' => strings.settingFilterComments,
+    'فهرست دوستان صمیمی' => strings.settingCloseFriendsList,
+    'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.' => strings.settingCloseFriendsNote,
+    'دسترسی به عکس‌ها و ویدئوها' => strings.settingPhotosVideosAccess,
+    'برای انتخاب رسانه از گالری استفاده می‌شود' => strings.settingGalleryInfo,
+    'دوربین' => strings.settingCamera,
+    'در صورت نیاز به قابلیت عکس‌برداری' => strings.settingCameraInfo,
+    'محتوای ذخیره‌شده' => strings.settingSavedContent,
+    'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.' => strings.settingSavedFuture,
+    'بایگانی محتوا' => strings.settingArchiveContent,
+    'در این نسخه هنوز محتوایی به بایگانی منتقل نمی‌شود.' => strings.settingNoArchivedContent,
+    'فعالیت‌ها' => strings.settingActivities,
+    'سوابق پسندیدن، نظرها و تعاملات در نسخه بعدی نمایش داده می‌شود.' => strings.settingActivityHistoryFuture,
+    'فهرست موارد دلخواه' => strings.settingFavoritesList,
+    'با اضافه‌شدن قابلیت دنبال‌کردن و ذخیره‌سازی، این بخش کامل می‌شود.' => strings.settingFavoritesFuture,
+    'صفحه اختصاصی این بخش ایجاد شد' => strings.settingDetailCreated,
+    'عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.' => strings.settingFeatureLater,
     _ => value,
   };
 
@@ -3837,12 +3870,12 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
             const Divider(thickness: 7, color: Color(0xFFF1F1F5)),
             if (rawTitle == 'حریم خصوصی حساب') ...[
               settingSwitch(
-                title: 'حساب خصوصی',
+                title: localizeSettingsText(strings, 'حساب خصوصی'),
                 value: mainSwitch,
                 onChanged: (value) => setState(() => mainSwitch = value),
               ),
-              const Padding(
-                padding: EdgeInsets.all(16),
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Text(
                   'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.',
                   style: TextStyle(color: Colors.grey, height: 1.7),
@@ -3850,12 +3883,12 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
               ),
             ] else if (rawTitle == 'اعلان‌ها') ...[
               settingSwitch(
-                title: 'فعال‌بودن اعلان‌ها',
+                title: localizeSettingsText(strings, 'فعال‌بودن اعلان‌ها'),
                 value: mainSwitch,
                 onChanged: (value) => setState(() => mainSwitch = value),
               ),
               settingSwitch(
-                title: 'اعلان پیام‌ها',
+                title: localizeSettingsText(strings, 'اعلان پیام‌ها'),
                 value: secondSwitch,
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
@@ -3892,26 +3925,26 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 ),
               ),
             ] else if (rawTitle == 'مصرف داده و کیفیت رسانه') ...[
-              optionTile('کیفیت خودکار', 'پیش‌فرض'),
-              optionTile('کیفیت بالا', 'کیفیت بالا'),
-              optionTile('صرفه‌جویی در مصرف داده', 'صرفه‌جویی'),
+              optionTile(localizeSettingsText(strings, 'کیفیت خودکار'), 'پیش‌فرض'),
+              optionTile(localizeSettingsText(strings, 'کیفیت بالا'), 'کیفیت بالا'),
+              optionTile(localizeSettingsText(strings, 'صرفه‌جویی در مصرف داده'), 'صرفه‌جویی'),
             ] else if (rawTitle == 'مدیریت زمان') ...[
               settingSwitch(
-                title: 'یادآوری زمان استفاده',
+                title: localizeSettingsText(strings, 'یادآوری زمان استفاده'),
                 value: mainSwitch,
                 onChanged: (value) => setState(() => mainSwitch = value),
               ),
               const ListTile(
-                title: Text('مدت‌زمان روزانه'),
-                subtitle: Text('بعداً امکان تعیین محدودیت زمانی اضافه می‌شود'),
+                title: Text(localizeSettingsText(strings, 'مدت‌زمان روزانه')),
+                subtitle: Text(localizeSettingsText(strings, 'بعداً امکان تعیین محدودیت زمانی اضافه می‌شود')),
               ),
             ] else if (rawTitle == 'کلمات پنهان‌شده') ...[
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: textController,
-                  decoration: const InputDecoration(
-                    labelText: 'افزودن کلمه یا عبارت',
+                  decoration: InputDecoration(
+                    labelText: localizeSettingsText(strings, 'افزودن کلمه یا عبارت'),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -3921,10 +3954,10 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (textController.text.trim().isEmpty) {
-                      showMessage('ابتدا یک کلمه وارد کن');
+                      showMessage(localizeSettingsText(strings, 'ابتدا یک کلمه وارد کن'));
                     } else {
                       showMessage(
-                        'ثبت کلمه در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود',
+                        localizeSettingsText(strings, 'ثبت کلمه در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود'),
                       );
                     }
                   },
@@ -3932,74 +3965,74 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                     backgroundColor: iranaPurple,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text('افزودن کلمه'),
+                  child: Text(localizeSettingsText(strings, 'افزودن کلمه')),
                 ),
               ),
             ] else if (rawTitle == 'نظرات') ...[
               settingSwitch(
-                title: 'اجازه دریافت نظر',
+                title: localizeSettingsText(strings, 'اجازه دریافت نظر'),
                 value: mainSwitch,
                 onChanged: (value) => setState(() => mainSwitch = value),
               ),
               settingSwitch(
-                title: 'فیلتر نظرات نامناسب',
+                title: localizeSettingsText(strings, 'فیلتر نظرات نامناسب'),
                 value: secondSwitch,
                 onChanged: (value) => setState(() => secondSwitch = value),
               ),
             ] else if (rawTitle == 'دوستان صمیمی') ...[
-              const ListTile(
-                leading: Icon(Icons.people_outline),
-                title: Text('فهرست دوستان صمیمی'),
+              ListTile(
+                leading: const Icon(Icons.people_outline),
+                title: Text(localizeSettingsText(strings, 'فهرست دوستان صمیمی')),
                 subtitle: Text(
-                  'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.',
+                  localizeSettingsText(strings, 'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.'),
                 ),
               ),
             ] else if (rawTitle == 'مجوزهای دستگاه') ...[
-              const ListTile(
-                leading: Icon(Icons.photo_outlined),
-                title: Text('دسترسی به عکس‌ها و ویدئوها'),
-                subtitle: Text('برای انتخاب رسانه از گالری استفاده می‌شود'),
+              ListTile(
+                leading: const Icon(Icons.photo_outlined),
+                title: Text(localizeSettingsText(strings, 'دسترسی به عکس‌ها و ویدئوها')),
+                subtitle: Text(localizeSettingsText(strings, 'برای انتخاب رسانه از گالری استفاده می‌شود')),
               ),
-              const ListTile(
-                leading: Icon(Icons.camera_alt_outlined),
-                title: Text('دوربین'),
-                subtitle: Text('در صورت نیاز به قابلیت عکس‌برداری'),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: Text(localizeSettingsText(strings, 'دوربین')),
+                subtitle: Text(localizeSettingsText(strings, 'در صورت نیاز به قابلیت عکس‌برداری')),
               ),
             ] else if (rawTitle == 'ذخیره‌شده') ...[
-              const ListTile(
-                leading: Icon(Icons.bookmark_border),
-                title: Text('محتوای ذخیره‌شده'),
+              ListTile(
+                leading: const Icon(Icons.bookmark_border),
+                title: Text(localizeSettingsText(strings, 'محتوای ذخیره‌شده')),
                 subtitle: Text(
-                  'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.',
+                  localizeSettingsText(strings, 'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.'),
                 ),
               ),
             ] else if (rawTitle == 'بایگانی') ...[
-              const ListTile(
-                leading: Icon(Icons.archive_outlined),
-                title: Text('بایگانی محتوا'),
+              ListTile(
+                leading: const Icon(Icons.archive_outlined),
+                title: Text(localizeSettingsText(strings, 'بایگانی محتوا')),
                 subtitle: Text(
-                  'در این نسخه هنوز محتوایی به بایگانی منتقل نمی‌شود.',
+                  localizeSettingsText(strings, 'در این نسخه هنوز محتوایی به بایگانی منتقل نمی‌شود.'),
                 ),
               ),
             ] else if (rawTitle == 'فعالیت شما') ...[
-              const ListTile(
-                leading: Icon(Icons.favorite_border),
-                title: Text('فعالیت‌ها'),
+              ListTile(
+                leading: const Icon(Icons.favorite_border),
+                title: Text(localizeSettingsText(strings, 'فعالیت‌ها')),
                 subtitle: Text(
-                  'سوابق پسندیدن، نظرها و تعاملات در نسخه بعدی نمایش داده می‌شود.',
+                  localizeSettingsText(strings, 'سوابق پسندیدن، نظرها و تعاملات در نسخه بعدی نمایش داده می‌شود.'),
                 ),
               ),
             ] else if (rawTitle == 'موارد دلخواه') ...[
-              const ListTile(
-                leading: Icon(Icons.star_border),
-                title: Text('فهرست موارد دلخواه'),
+              ListTile(
+                leading: const Icon(Icons.star_border),
+                title: Text(localizeSettingsText(strings, 'فهرست موارد دلخواه')),
                 subtitle: Text(
-                  'با اضافه‌شدن قابلیت دنبال‌کردن و ذخیره‌سازی، این بخش کامل می‌شود.',
+                  localizeSettingsText(strings, 'با اضافه‌شدن قابلیت دنبال‌کردن و ذخیره‌سازی، این بخش کامل می‌شود.'),
                 ),
               ),
             ] else ...[
-              const Padding(
-                padding: EdgeInsets.all(20),
+              Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
                     Icon(
@@ -4009,7 +4042,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                     ),
                     SizedBox(height: 15),
                     Text(
-                      'صفحه اختصاصی این بخش ایجاد شد',
+                      localizeSettingsText(strings, 'صفحه اختصاصی این بخش ایجاد شد'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -4017,7 +4050,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      'عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.',
+                      localizeSettingsText(strings, 'عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.'),
                       textAlign: TextAlign.center,
                       style: TextStyle(color: Colors.grey, height: 1.8),
                     ),
