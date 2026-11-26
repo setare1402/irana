@@ -87,7 +87,7 @@ String localizeSettingsText(AppLocalizations strings, String value) => switch (v
     'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.' => strings.settingCloseFriendsNote,
     'دسترسی به عکس‌ها و ویدئوها' => strings.settingPhotosVideosAccess,
     'برای انتخاب رسانه از گالری استفاده می‌شود' => strings.settingGalleryInfo,
-    lookupAppLocalizations(iranaLocale.value).storyCamera => strings.settingCamera,
+    'دوربین' => strings.settingCamera,
     'در صورت نیاز به قابلیت عکس‌برداری' => strings.settingCameraInfo,
     'محتوای ذخیره‌شده' => strings.settingSavedContent,
     'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.' => strings.settingSavedFuture,
@@ -4356,7 +4356,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                       children: [
                         actionItem(
                           icon: Icons.camera_alt_outlined,
-                          title: 'دوربین',
+                          title: lookupAppLocalizations(iranaLocale.value).storyCamera,
                           onTap: takePhoto,
                         ),
                         actionItem(
