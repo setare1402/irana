@@ -2264,7 +2264,7 @@ class _SearchPageState extends State<SearchPage> {
             child: query.isEmpty
                 ? Center(child: Text(AppLocalizations.of(context)!.discoverIrana))
                 : results.isEmpty
-                    ? const Center(child: Text('نتیجه‌ای پیدا نشد'))
+                    ? Center(child: Text(AppLocalizations.of(context)!.noSearchResults))
                     : ListView(
                         children: results.map((post) {
                           return ListTile(
@@ -2367,7 +2367,7 @@ class _CreatePageState extends State<CreatePage> {
     return ListView(
       padding: const EdgeInsets.all(18),
       children: [
-        const Text(
+        Text(
           AppLocalizations.of(context)!.createPostTitle,
           style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
@@ -2797,7 +2797,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     tooltip: AppLocalizations.of(context)!.newContentTooltip,
                                     onPressed: () {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
                                             AppLocalizations.of(context)!.selectPublishTabHint,
                                           ),
@@ -2833,7 +2833,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                           ),
                         ),
-                        const Positioned(
+                        Positioned(
                           right: 28,
                           top: 105,
                           child: Text(
