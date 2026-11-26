@@ -1045,7 +1045,7 @@ class _IranaHomeState extends State<IranaHome> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text(strings.cancel),
+              child: const Text('انصراف'),
             ),
           ],
         ),
@@ -2595,7 +2595,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: strings.profileDisplayName,
                         prefixIcon: Icon(Icons.person_outline),
                       ),
@@ -2603,7 +2603,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: usernameController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: strings.profileUsername,
                         prefixIcon: Icon(Icons.alternate_email),
                       ),
@@ -2613,7 +2613,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       controller: bioController,
                       maxLines: 3,
                       maxLength: 150,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: strings.profileBio,
                         prefixIcon: Icon(Icons.edit_note),
                       ),
@@ -2624,7 +2624,7 @@ class _ProfilePageState extends State<ProfilePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext, false),
-                  child: const Text('انصراف'),
+                  child: Text(strings.cancel),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -2635,11 +2635,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     if (nameController.text.trim().isEmpty ||
                         usernameController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            strings.profileRequiredFields,
-                          ),
-                        ),
+                        SnackBar(content: Text(strings.profileRequiredFields)),
                       );
                       return;
                     }
@@ -4175,7 +4171,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(lookupAppLocalizations(iranaLocale.value).storyPublished)),
+        SnackBar(content: Text(lookupAppLocalizations(iranaLocale.value).storyPublished)),
       );
     } catch (_) {
       if (mounted) showMessage(lookupAppLocalizations(iranaLocale.value).storyPublishFailed);
@@ -4233,7 +4229,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
           backgroundColor: const Color(0xFF17131D),
           foregroundColor: Colors.white,
           elevation: 0,
-          title: const Text(
+          title: Text(
             lookupAppLocalizations(iranaLocale.value).storyCreateTitle,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
@@ -4279,7 +4275,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            const Text(
+                            Text(
                               lookupAppLocalizations(iranaLocale.value).storyCreatePrompt,
                               style: TextStyle(
                                 color: Colors.white,
@@ -4288,7 +4284,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                               ),
                             ),
                             const SizedBox(height: 9),
-                            const Text(
+                            Text(
                               lookupAppLocalizations(iranaLocale.value).storyChooseMediaPrompt,
                               style: TextStyle(color: Colors.white70),
                             ),
@@ -4338,7 +4334,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                 child: Column(
                   children: [
                     if (selectedFile == null) ...[
-                      const Align(
+                      Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           lookupAppLocalizations(iranaLocale.value).storyBuildLabel,
@@ -4390,7 +4386,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                         child: OutlinedButton.icon(
                           onPressed: recordVideo,
                           icon: const Icon(Icons.videocam_outlined),
-                          label: const Text(lookupAppLocalizations(iranaLocale.value).storyRecordVideo),
+                          label: Text(lookupAppLocalizations(iranaLocale.value).storyRecordVideo),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white38),
@@ -4414,7 +4410,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                                 side: const BorderSide(color: Colors.white38),
                                 padding: const EdgeInsets.all(14),
                               ),
-                              child: const Text(lookupAppLocalizations(iranaLocale.value).storyChooseAgain),
+                              child: Text(lookupAppLocalizations(iranaLocale.value).storyChooseAgain),
                             ),
                           ),
                           const SizedBox(width: 10),
