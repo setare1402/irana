@@ -37,6 +37,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Analyze Flutter code
+        run: flutter analyze --no-fatal-infos
+
       - name: Generate Android launcher icon only
         run: |
           python - <<'PY'
