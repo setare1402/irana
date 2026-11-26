@@ -237,3 +237,39 @@ AI must not infer a violation solely from protected identity, nationality, relig
 ## 12. Immediate next technical step
 
 Before writing runtime code, inspect the repository's actual default branch and connected backend repository/service to identify the real API entry point, authentication mechanism, PostgreSQL schema, and deployment target. Do not create a second backend or database until this is confirmed. Then implement Phase A as a separate, reviewable change with migrations and tests.
+
+
+## 13. Unified global user and content monitoring dashboard (mandatory)
+
+The staff console must provide one unified **Global Monitoring** page as the primary workspace for authorized administrators and moderators. This is one page with internal tabs, filters, search, and detail panels—not a requirement to render every record simultaneously.
+
+### Unified page capabilities
+- Search across all registered accounts using username, public display name, or account identifier, subject to staff permissions.
+- Browse a global stream of public posts and stories from all users.
+- Open an account detail panel showing public profile information, account status, moderation history, and that account's public post/story timeline.
+- Open a content detail panel with the original public content, author, publication time, report state, review state, and permitted moderation history.
+- Filter the global stream by user, date range, content type (post/story), report status, review status, AI suggested risk/priority, and content state (visible, hidden, removed, expired).
+- Search and filters must apply across the complete authorized dataset, not only the records currently loaded on screen.
+- Provide actions appropriate to the staff role: open/review case, assign, warn, apply a scoped restriction, hide/remove content with a policy reason, restore content after a successful appeal, and inspect the related audit trail.
+- Include a separate view or tab within the same page for report queue, appeals, and staff activity history.
+
+### Large-volume display and performance
+- Keep the experience as one unified page while loading records progressively (for example, 20–30 items per batch) with cursor-based pagination or infinite scrolling.
+- Do not load thousands or millions of posts/stories into the client at once.
+- Use server-side search, filtering, sorting, and pagination. Show total counts where they can be calculated reliably.
+- Add database indexes for common filters and ordering (author, created time, content type, moderation/report state); review query plans as volume grows.
+- Use background jobs for AI analysis and media processing. Keep the page responsive and show loading, empty, and error states.
+- The system must scale without changing the single-page management concept; capacity is achieved through pagination, indexing, caching where safe, and query optimization—not by attempting to display every record at once.
+
+### Privacy and access boundaries
+- Global browsing applies to public posts, public stories, and account information the staff role is permitted to see.
+- Private messages and private media are not part of unrestricted global browsing. Exceptional access requires a specific authorized case, a documented necessity and reason, least-privilege permission, and an immutable audit event.
+- Log sensitive account/content detail access and all moderation actions. Do not expose reporter identities or private evidence to staff who do not need them.
+- Enforce all permissions on the server; hiding dashboard controls is not sufficient.
+
+### Acceptance criteria
+- An authorized administrator can search for any account and find its permitted public content across the platform.
+- The global stream can search/filter the full dataset while displaying only a small batch at a time.
+- Selecting a user shows that user's public posts and stories in chronological order, with permitted moderation context.
+- Every sensitive access and every enforcement, removal, restoration, or appeal decision is traceable in the audit history.
+- The unified page remains usable under large data volumes and does not require a separate page per user or content type.
