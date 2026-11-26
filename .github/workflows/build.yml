@@ -34,6 +34,22 @@ jobs:
       - name: Generate Android project files
         run: flutter create --platforms=android .
 
+      - name: Configure Maven mirrors for Android build
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('android/settings.gradle.kts')
+          s = p.read_text()
+          marker = 'repositories {'
+          mirrors = '''repositories {
+                  maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+                  maven { url = uri("https://maven.aliyun.com/repository/google") }
+                  maven { url = uri("https://maven.aliyun.com/repository/public") }'''
+          assert s.count(marker) == 2, f'Expected 2 repository blocks in settings.gradle.kts, found {s.count(marker)}'
+          s = s.replace(marker, mirrors, 2)
+          p.write_text(s)
+          PY
+
       - name: Install dependencies
         run: flutter pub get
 
