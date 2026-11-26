@@ -485,6 +485,7 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> addPost(XFile file, String caption, bool video) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     try {
       final path = await copyMedia(file);
       final post = IranaPost(
@@ -504,11 +505,11 @@ class _IranaHomeState extends State<IranaHome> {
       await saveData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('پست با موفقیت منتشر شد 💜')),
+          SnackBar(content: Text(l10n.postPublished)),
         );
       }
     } catch (_) {
-      showMessage('انتشار پست انجام نشد');
+      showMessage(l10n.postPublishFailed);
     }
   }
 
@@ -529,6 +530,7 @@ class _IranaHomeState extends State<IranaHome> {
   }
 
   Future<void> toggleSave(String id) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     setState(() {
       if (savedPostIds.contains(id)) {
         savedPostIds.remove(id);
@@ -539,39 +541,40 @@ class _IranaHomeState extends State<IranaHome> {
     await saveData();
     showMessage(
       savedPostIds.contains(id)
-          ? 'پست ذخیره شد'
-          : 'پست از ذخیره‌شده‌ها حذف شد',
+          ? l10n.postSaved
+          : l10n.postUnsaved,
     );
   }
 
   // ---------------- POST MENU ACTIONS ----------------
 
   Future<void> editPost(IranaPost post) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     final controller = TextEditingController(text: post.caption);
 
     final result = await showDialog<String>(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: iranaTextDirection,
         child: AlertDialog(
-          title: const Text('ویرایش پست'),
+          title: Text(l10n.editPost),
           content: TextField(
             controller: controller,
             maxLines: 5,
             decoration: const InputDecoration(
-              hintText: 'متن پست را ویرایش کن',
+              hintText: l10n.editPostHint,
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('انصراف'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               onPressed: () =>
                   Navigator.pop(dialogContext, controller.text.trim()),
-              child: const Text('ذخیره'),
+              child: Text(l10n.save),
             ),
           ],
         ),
@@ -588,17 +591,18 @@ class _IranaHomeState extends State<IranaHome> {
     });
 
     await saveData();
-    showMessage('پست ویرایش شد');
+    showMessage(l10n.postEdited);
   }
 
   Future<void> deletePost(IranaPost post) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: iranaTextDirection,
         child: AlertDialog(
-          title: const Text('حذف پست'),
-          content: const Text('آیا مطمئنی می‌خواهی این پست حذف شود؟'),
+          title: Text(l10n.deletePost),
+          content: Text(l10n.confirmDeletePost),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -610,7 +614,7 @@ class _IranaHomeState extends State<IranaHome> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('بله، حذف شود'),
+              child: Text(l10n.confirmDelete),
             ),
           ],
         ),
@@ -629,10 +633,11 @@ class _IranaHomeState extends State<IranaHome> {
     });
 
     await saveData();
-    showMessage('پست حذف شد');
+    showMessage(l10n.postDeleted);
   }
 
   Future<void> toggleComments(IranaPost post) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     setState(() {
       posts = posts
           .map((p) => p.id == post.id
@@ -645,17 +650,18 @@ class _IranaHomeState extends State<IranaHome> {
 
     final updated = posts.firstWhere((p) => p.id == post.id);
     showMessage(
-      updated.commentsEnabled ? 'نظرات باز شدند' : 'نظرات بسته شدند',
+      updated.commentsEnabled ? l10n.commentsOpened : l10n.commentsClosed,
     );
   }
 
   Future<void> manageComments(IranaPost post) async {
+    final l10n = lookupAppLocalizations(iranaLocale.value);
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: iranaTextDirection,
         child: StatefulBuilder(
           builder: (context, refresh) {
             final postComments =
@@ -665,10 +671,10 @@ class _IranaHomeState extends State<IranaHome> {
               height: MediaQuery.of(context).size.height * 0.7,
               child: Column(
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.all(16),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Text(
-                      'مدیریت نظرات',
+                      l10n.manageComments,
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.bold,
@@ -678,7 +684,7 @@ class _IranaHomeState extends State<IranaHome> {
                   const Divider(),
                   Expanded(
                     child: postComments.isEmpty
-                        ? const Center(child: Text('نظری ثبت نشده است'))
+                        ? Center(child: Text(l10n.noComments))
                         : ListView.builder(
                             itemCount: postComments.length,
                             itemBuilder: (context, index) {
