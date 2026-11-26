@@ -80,7 +80,7 @@ class _IranaNotificationsPageState extends State<IranaNotificationsPage> {
               color: _pink,
               title: l10n.welcomeToIrana,
               detail: l10n.notificationIntro,
-              time: 'همین حالا',
+              time: l10n.justNow,
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -268,7 +268,7 @@ class _IranaNotificationSettingsPageState extends State<IranaNotificationSetting
             _switch(l10n.likes, l10n.likesInfo, likes, 'irana_notice_likes', (v) => likes = v),
             _switch(l10n.commentsReplies, '', comments, 'irana_notice_comments', (v) => comments = v),
             _switch(l10n.newFollowers, '', followers, 'irana_notice_followers', (v) => followers = v),
-            _switch('پیام‌ها', '', messages, 'irana_notice_messages', (v) => messages = v),
+            _switch(l10n.messages, '', messages, 'irana_notice_messages', (v) => messages = v),
             _switch(l10n.mentionsTags, '', mentions, 'irana_notice_mentions', (v) => mentions = v),
             _switch(l10n.calls, '', calls, 'irana_notice_calls', (v) => calls = v),
             _switch(l10n.liveVideo, '', live, 'irana_notice_live', (v) => live = v),
