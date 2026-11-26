@@ -61,5 +61,20 @@
   "emailInfo": "Receive news and offers by email",
   "notificationSettingsInfo": "These settings are currently saved on this device and preserve your preferences. System notifications and server delivery will be enabled when the infrastructure is connected.",
   "justNow": "Just now",
-  "messages": "Messages"
+  "messages": "Messages",
+  "postPublished": "Post published successfully 💜",
+  "postPublishFailed": "Could not publish the post",
+  "postSaved": "Post saved",
+  "postUnsaved": "Post removed from saved items",
+  "editPost": "Edit post",
+  "editPostHint": "Edit your post text",
+  "postEdited": "Post updated",
+  "deletePost": "Delete post",
+  "confirmDeletePost": "Are you sure you want to delete this post?",
+  "confirmDelete": "Yes, delete it",
+  "postDeleted": "Post deleted",
+  "commentsOpened": "Comments enabled",
+  "commentsClosed": "Comments disabled",
+  "manageComments": "Manage comments",
+  "noComments": "No comments yet"
 }
