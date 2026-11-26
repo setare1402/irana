@@ -2249,7 +2249,7 @@ class _SearchPageState extends State<SearchPage> {
           TextField(
             onChanged: (value) => setState(() => query = value),
             decoration: InputDecoration(
-              hintText: 'جستجوی افراد و موضوعات...',
+              hintText: AppLocalizations.of(context)!.searchPeopleTopics,
               prefixIcon: const Icon(Icons.search),
               filled: true,
               fillColor: Colors.white,
@@ -2262,7 +2262,7 @@ class _SearchPageState extends State<SearchPage> {
           const SizedBox(height: 15),
           Expanded(
             child: query.isEmpty
-                ? const Center(child: Text('جهان ایرانا را کشف کن'))
+                ? Center(child: Text(AppLocalizations.of(context)!.discoverIrana))
                 : results.isEmpty
                     ? const Center(child: Text('نتیجه‌ای پیدا نشد'))
                     : ListView(
@@ -2321,7 +2321,7 @@ class _CreatePageState extends State<CreatePage> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('انتخاب فایل انجام نشد')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.fileSelectionFailed)),
       );
     }
   }
@@ -2329,7 +2329,7 @@ class _CreatePageState extends State<CreatePage> {
   Future<void> publish() async {
     if (selectedMedia == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('ابتدا عکس یا ویدئو انتخاب کن')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.selectMediaFirst)),
       );
       return;
     }
@@ -2368,7 +2368,7 @@ class _CreatePageState extends State<CreatePage> {
       padding: const EdgeInsets.all(18),
       children: [
         const Text(
-          'ساخت پست جدید',
+          AppLocalizations.of(context)!.createPostTitle,
           style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 20),
@@ -2382,16 +2382,16 @@ class _CreatePageState extends State<CreatePage> {
               border: Border.all(color: iranaPurple.withOpacity(0.3)),
             ),
             child: selectedMedia == null
-                ? const Column(
+                ? Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.add_photo_alternate_outlined,
                         size: 75,
                         color: iranaPurple,
                       ),
-                      SizedBox(height: 12),
-                      Text('انتخاب عکس یا ویدئو از گالری'),
+                      const SizedBox(height: 12),
+                      Text(AppLocalizations.of(context)!.choosePhotoVideo),
                     ],
                   )
                 : ClipRRect(
@@ -2419,7 +2419,7 @@ class _CreatePageState extends State<CreatePage> {
           controller: captionController,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: 'متن و کپشن پست خود را بنویس...',
+            hintText: AppLocalizations.of(context)!.postCaptionHint,
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -2432,7 +2432,7 @@ class _CreatePageState extends State<CreatePage> {
         ElevatedButton.icon(
           onPressed: publishing ? null : publish,
           icon: const Icon(Icons.publish),
-          label: Text(publishing ? 'در حال انتشار...' : 'انتشار پست'),
+          label: Text(publishing ? AppLocalizations.of(context)!.publishingNow : AppLocalizations.of(context)!.publishPost),
           style: ElevatedButton.styleFrom(
             backgroundColor: iranaPurple,
             foregroundColor: Colors.white,
@@ -2794,12 +2794,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                 Column(
                                   children: [
                                   IconButton(
-                                    tooltip: 'انتشار محتوای جدید',
+                                    tooltip: AppLocalizations.of(context)!.newContentTooltip,
                                     onPressed: () {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(
                                           content: Text(
-                                            'برای انتشار محتوا، بخش انتشار را از نوار پایین انتخاب کنید',
+                                            AppLocalizations.of(context)!.selectPublishTabHint,
                                           ),
                                         ),
                                       );
@@ -2811,7 +2811,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ),
                                   ),
                                   IconButton(
-                                    tooltip: 'منوی تنظیمات',
+                                    tooltip: AppLocalizations.of(context)!.settingsMenuTooltip,
                                     onPressed: () {
                                       Navigator.push(
                                         context,
@@ -2837,7 +2837,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           right: 28,
                           top: 105,
                           child: Text(
-                            'جهان زیبای ایرانا',
+                            AppLocalizations.of(context)!.iranaWorldTagline,
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
