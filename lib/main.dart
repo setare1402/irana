@@ -3719,7 +3719,7 @@ class IranaSettingsPage extends StatelessWidget {
           backgroundColor: Colors.white,
           elevation: 0,
           foregroundColor: Colors.black,
-          title: const Text(
+          title: Text(
             localizeSettingsText(lookupAppLocalizations(iranaLocale.value), 'تنظیمات و فعالیت'),
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
@@ -3934,7 +3934,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
                 value: mainSwitch,
                 onChanged: (value) => setState(() => mainSwitch = value),
               ),
-              const ListTile(
+              ListTile(
                 title: Text(localizeSettingsText(strings, 'مدت‌زمان روزانه')),
                 subtitle: Text(localizeSettingsText(strings, 'بعداً امکان تعیین محدودیت زمانی اضافه می‌شود')),
               ),
