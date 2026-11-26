@@ -3035,7 +3035,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
                             lookupAppLocalizations(iranaLocale.value).shareProfileComingSoon,
                           ),
