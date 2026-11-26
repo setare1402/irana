@@ -87,7 +87,7 @@ String localizeSettingsText(AppLocalizations strings, String value) => switch (v
     'برای افزودن دوستان، ابتدا قابلیت دنبال‌کردن و حساب‌های کاربری باید به سرور متصل شوند.' => strings.settingCloseFriendsNote,
     'دسترسی به عکس‌ها و ویدئوها' => strings.settingPhotosVideosAccess,
     'برای انتخاب رسانه از گالری استفاده می‌شود' => strings.settingGalleryInfo,
-    'دوربین' => strings.settingCamera,
+    lookupAppLocalizations(iranaLocale.value).storyCamera => strings.settingCamera,
     'در صورت نیاز به قابلیت عکس‌برداری' => strings.settingCameraInfo,
     'محتوای ذخیره‌شده' => strings.settingSavedContent,
     'بخش ذخیره پست‌ها در نسخه بعدی به فهرست ذخیره‌شده متصل می‌شود.' => strings.settingSavedFuture,
@@ -1045,7 +1045,7 @@ class _IranaHomeState extends State<IranaHome> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('انصراف'),
+              child: Text(strings.cancel),
             ),
           ],
         ),
@@ -2576,6 +2576,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> editProfile() async {
+    final strings = lookupAppLocalizations(iranaLocale.value);
     final nameController = TextEditingController(text: profileName);
     final usernameController = TextEditingController(text: username);
     final bioController = TextEditingController(text: bio);
@@ -2587,7 +2588,7 @@ class _ProfilePageState extends State<ProfilePage> {
           return Directionality(
             textDirection: TextDirection.rtl,
             child: AlertDialog(
-              title: const Text('ویرایش پروفایل'),
+              title: Text(strings.profileEditTitle),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -2595,7 +2596,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'نام نمایشی',
+                        labelText: strings.profileDisplayName,
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                     ),
@@ -2603,7 +2604,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     TextField(
                       controller: usernameController,
                       decoration: const InputDecoration(
-                        labelText: 'نام کاربری',
+                        labelText: strings.profileUsername,
                         prefixIcon: Icon(Icons.alternate_email),
                       ),
                     ),
@@ -2613,7 +2614,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       maxLines: 3,
                       maxLength: 150,
                       decoration: const InputDecoration(
-                        labelText: 'بیوگرافی',
+                        labelText: strings.profileBio,
                         prefixIcon: Icon(Icons.edit_note),
                       ),
                     ),
@@ -2636,7 +2637,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ScaffoldMessenger.of(dialogContext).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'نام و نام کاربری نمی‌توانند خالی باشند',
+                            strings.profileRequiredFields,
                           ),
                         ),
                       );
@@ -2644,7 +2645,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     }
                     Navigator.pop(dialogContext, true);
                   },
-                  child: const Text('ذخیره تغییرات'),
+                  child: Text(strings.saveChanges),
                 ),
               ],
             ),
@@ -2663,7 +2664,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('پروفایل با موفقیت ذخیره شد 💜')),
+            SnackBar(content: Text(strings.profileSaved)),
           );
         }
       }
@@ -2675,6 +2676,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> changeAvatar() async {
+    final strings = lookupAppLocalizations(iranaLocale.value);
     try {
       final file = await picker.pickImage(
         source: ImageSource.gallery,
@@ -2703,13 +2705,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('عکس پروفایل تغییر کرد 💜')),
+          SnackBar(content: Text(strings.profilePhotoChanged)),
         );
       }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تغییر عکس پروفایل انجام نشد')),
+        SnackBar(content: Text(strings.profilePhotoChangeFailed)),
       );
     }
   }
@@ -4106,7 +4108,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
         selectedVideo = isVideoFile(file);
       });
     } catch (_) {
-      showMessage('بازکردن گالری انجام نشد');
+      showMessage(lookupAppLocalizations(iranaLocale.value).storyGalleryOpenFailed);
     }
   }
 
@@ -4124,7 +4126,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
         selectedVideo = false;
       });
     } catch (_) {
-      showMessage('بازکردن دوربین انجام نشد');
+      showMessage(lookupAppLocalizations(iranaLocale.value).storyCameraOpenFailed);
     }
   }
 
@@ -4142,7 +4144,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
         selectedVideo = true;
       });
     } catch (_) {
-      showMessage('ضبط ویدئو انجام نشد');
+      showMessage(lookupAppLocalizations(iranaLocale.value).storyVideoRecordFailed);
     }
   }
 
@@ -4159,7 +4161,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
 
   Future<void> publishStory() async {
     if (selectedFile == null) {
-      showMessage('ابتدا عکس یا ویدئو انتخاب کن');
+      showMessage(lookupAppLocalizations(iranaLocale.value).storySelectMediaFirst);
       return;
     }
 
@@ -4173,10 +4175,10 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('استوری منتشر شد 💜')),
+        const SnackBar(content: Text(lookupAppLocalizations(iranaLocale.value).storyPublished)),
       );
     } catch (_) {
-      if (mounted) showMessage('انتشار استوری انجام نشد');
+      if (mounted) showMessage(lookupAppLocalizations(iranaLocale.value).storyPublishFailed);
     } finally {
       if (mounted) setState(() => publishing = false);
     }
@@ -4232,7 +4234,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
           foregroundColor: Colors.white,
           elevation: 0,
           title: const Text(
-            'افزودن به داستان',
+            lookupAppLocalizations(iranaLocale.value).storyCreateTitle,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           leading: IconButton(
@@ -4241,7 +4243,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
           ),
           actions: [
             IconButton(
-              tooltip: 'تنظیمات استوری',
+              tooltip: lookupAppLocalizations(iranaLocale.value).storySettings,
               onPressed: () {
                 Navigator.push(
                   context,
@@ -4278,7 +4280,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                             ),
                             const SizedBox(height: 20),
                             const Text(
-                              'داستان جدید خود را بساز',
+                              lookupAppLocalizations(iranaLocale.value).storyCreatePrompt,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -4287,7 +4289,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                             ),
                             const SizedBox(height: 9),
                             const Text(
-                              'یک عکس یا ویدئو انتخاب کن',
+                              lookupAppLocalizations(iranaLocale.value).storyChooseMediaPrompt,
                               style: TextStyle(color: Colors.white70),
                             ),
                           ],
@@ -4311,7 +4313,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                                       ),
                                       SizedBox(height: 10),
                                       Text(
-                                        'ویدئوی انتخاب‌شده',
+                                        lookupAppLocalizations(iranaLocale.value).storyVideoSelected,
                                         style: TextStyle(color: Colors.white),
                                       ),
                                     ],
@@ -4339,7 +4341,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                       const Align(
                         alignment: Alignment.centerRight,
                         child: Text(
-                          'ساخت داستان',
+                          lookupAppLocalizations(iranaLocale.value).storyBuildLabel,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -4359,23 +4361,23 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                         ),
                         actionItem(
                           icon: Icons.photo_library_outlined,
-                          title: 'گالری',
+                          title: lookupAppLocalizations(iranaLocale.value).storyGallery,
                           onTap: chooseGallery,
                         ),
                         actionItem(
                           icon: Icons.music_note,
-                          title: 'موسیقی',
+                          title: lookupAppLocalizations(iranaLocale.value).storyMusic,
                           onTap: () => showComingSoon('موسیقی'),
                           color: iranaPink,
                         ),
                         actionItem(
                           icon: Icons.grid_view_rounded,
-                          title: 'کلاژ',
+                          title: lookupAppLocalizations(iranaLocale.value).storyCollage,
                           onTap: () => showComingSoon('کلاژ'),
                         ),
                         actionItem(
                           icon: Icons.dashboard_outlined,
-                          title: 'قالب‌ها',
+                          title: lookupAppLocalizations(iranaLocale.value).storyTemplates,
                           onTap: () => showComingSoon('قالب‌ها'),
                           color: iranaGold,
                         ),
@@ -4388,7 +4390,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                         child: OutlinedButton.icon(
                           onPressed: recordVideo,
                           icon: const Icon(Icons.videocam_outlined),
-                          label: const Text('ضبط ویدئو با دوربین'),
+                          label: const Text(lookupAppLocalizations(iranaLocale.value).storyRecordVideo),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white38),
@@ -4412,7 +4414,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                                 side: const BorderSide(color: Colors.white38),
                                 padding: const EdgeInsets.all(14),
                               ),
-                              child: const Text('انتخاب مجدد'),
+                              child: const Text(lookupAppLocalizations(iranaLocale.value).storyChooseAgain),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -4422,8 +4424,8 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                               icon: const Icon(Icons.send),
                               label: Text(
                                 publishing
-                                    ? 'در حال انتشار...'
-                                    : 'انتشار استوری',
+                                    ? lookupAppLocalizations(iranaLocale.value).storyPublishing
+                                    : lookupAppLocalizations(iranaLocale.value).storyPublish,
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: iranaPurple,
