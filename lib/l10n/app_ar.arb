@@ -147,5 +147,19 @@
   "settingFavoritesList": "قائمة المفضلة",
   "settingFavoritesFuture": "سيكتمل هذا القسم عند إضافة ميزتي المتابعة والحفظ.",
   "settingDetailCreated": "تم إنشاء صفحة مخصصة لهذا القسم",
-  "settingFeatureLater": "ستُضاف الوظائف الكاملة لهذا الخيار إلى إيرانا في مرحلة لاحقة. وستظل إعدادات التطبيق الحالية ومعلوماتك دون تغيير."
+  "settingFeatureLater": "ستُضاف الوظائف الكاملة لهذا الخيار إلى إيرانا في مرحلة لاحقة. وستظل إعدادات التطبيق الحالية ومعلوماتك دون تغيير.",
+  "createPostTitle": "إنشاء منشور جديد",
+  "choosePhotoVideo": "اختر صورة أو فيديو من المعرض",
+  "postCaptionHint": "اكتب نص المنشور والوصف...",
+  "publishingNow": "جارٍ النشر...",
+  "publishPost": "نشر المنشور",
+  "fileSelectionFailed": "فشل اختيار الملف",
+  "selectMediaFirst": "اختر صورة أو فيديو أولاً",
+  "searchPeopleTopics": "ابحث عن أشخاص ومواضيع...",
+  "discoverIrana": "اكتشف عالم إيرانا",
+  "noSearchResults": "لم يتم العثور على نتائج",
+  "newContentTooltip": "إنشاء محتوى جديد",
+  "selectPublishTabHint": "لنشر المحتوى، اختر علامة النشر من الشريط السفلي",
+  "settingsMenuTooltip": "قائمة الإعدادات",
+  "iranaWorldTagline": "عالم إيرانا الجميل"
 }
