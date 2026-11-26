@@ -67,7 +67,7 @@ String localizeSettingsText(AppLocalizations strings, String value) => switch (v
     'برنامه و رسانه‌های شما' => strings.settingsSectionAppMedia,
     'تنظیمات و فعالیت' => strings.settingsAndActivity,
     'حساب خصوصی' => strings.settingPrivateAccount,
-    localizeSettingsText(strings, 'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.') => strings.settingPrivacyNote,
+    'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.' => strings.settingPrivacyNote,
     'فعال‌بودن اعلان‌ها' => strings.settingNotificationsEnabled,
     'اعلان پیام‌ها' => strings.settingMessageNotifications,
     'کیفیت خودکار' => strings.settingAutoQuality,
@@ -3877,7 +3877,7 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.',
+                  localizeSettingsText(strings, 'با فعال‌کردن این گزینه، در نسخه فعلی فقط وضعیت نمایشی حریم خصوصی تغییر می‌کند. اتصال و اعمال این تنظیم برای کاربران دیگر به زیرساخت حساب کاربری و سرور نیاز دارد.'),
                   style: TextStyle(color: Colors.grey, height: 1.7),
                 ),
               ),
