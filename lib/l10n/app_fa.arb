@@ -147,5 +147,19 @@
   "settingFavoritesList": "فهرست موارد دلخواه",
   "settingFavoritesFuture": "با اضافه‌شدن قابلیت دنبال‌کردن و ذخیره‌سازی، این بخش کامل می‌شود.",
   "settingDetailCreated": "صفحه اختصاصی این بخش ایجاد شد",
-  "settingFeatureLater": "عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند."
+  "settingFeatureLater": "عملکرد کامل این گزینه در مرحله بعد به ایرانا اضافه می‌شود. تنظیمات فعلی برنامه و اطلاعات شما دست‌نخورده باقی می‌مانند.",
+  "createPostTitle": "ساخت پست جدید",
+  "choosePhotoVideo": "انتخاب عکس یا ویدئو از گالری",
+  "postCaptionHint": "متن و کپشن پست خود را بنویس...",
+  "publishingNow": "در حال انتشار...",
+  "publishPost": "انتشار پست",
+  "fileSelectionFailed": "انتخاب فایل انجام نشد",
+  "selectMediaFirst": "ابتدا عکس یا ویدئو انتخاب کن",
+  "searchPeopleTopics": "جستجوی افراد و موضوعات...",
+  "discoverIrana": "جهان ایرانا را کشف کن",
+  "noSearchResults": "نتیجه‌ای پیدا نشد",
+  "newContentTooltip": "انتشار محتوای جدید",
+  "selectPublishTabHint": "برای انتشار محتوا، بخش انتشار را از نوار پایین انتخاب کنید",
+  "settingsMenuTooltip": "منوی تنظیمات",
+  "iranaWorldTagline": "جهان زیبای ایرانا"
 }
