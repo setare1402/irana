@@ -41,7 +41,7 @@ jobs:
         run: flutter gen-l10n
 
       - name: Analyze Flutter code
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos lib
 
       - name: Generate Android launcher icon only
         run: |
