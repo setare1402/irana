@@ -4299,7 +4299,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                               ? Container(
                                   width: double.infinity,
                                   color: Colors.black,
-                                  child: const Column(
+                                  child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
