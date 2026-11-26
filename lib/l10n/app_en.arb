@@ -191,5 +191,17 @@
   "storyVideoRecordFailed": "Could not record video",
   "storySelectMediaFirst": "Choose a photo or video first",
   "storyPublished": "Story published 💜",
-  "storyPublishFailed": "Could not publish story"
+  "storyPublishFailed": "Could not publish story",
+  "searchUserHint": "Search users by name or username...",
+  "videosTitle": "IRANA Videos",
+  "noVideosPublished": "No videos have been published yet",
+  "videoByIrana": "IRANA video",
+  "storyVideoLabel": "Story video",
+  "defaultProfileName": "IRANA User",
+  "shareProfile": "Share profile",
+  "shareProfileComingSoon": "Profile sharing will be available in a future update",
+  "highlights": "Highlights",
+  "selectedStories": "Featured stories",
+  "noPostsYet": "You haven't published any posts yet",
+  "newHighlight": "New"
 }
