@@ -2466,7 +2466,7 @@ class VideosPage extends StatelessWidget {
     final storyVideos = stories.where((s) => s.isVideo).toList();
 
     if (videos.isEmpty && storyVideos.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -3065,7 +3065,7 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: Row(
               children: [
-                const Text(
+                Text(
                   lookupAppLocalizations(iranaLocale.value).highlights,
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
                 ),
@@ -3124,8 +3124,8 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           if (widget.posts.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 35),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 35),
               child: Column(
                 children: [
                   Icon(
@@ -3218,7 +3218,7 @@ class _ProfileAddHighlight extends StatelessWidget {
               child: const Icon(Icons.add, color: Color(0xFF5A128C), size: 34),
             ),
             const SizedBox(height: 5),
-            const Text(
+            Text(
               lookupAppLocalizations(iranaLocale.value).newHighlight,
               maxLines: 1,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
