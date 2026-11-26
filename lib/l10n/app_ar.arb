@@ -191,5 +191,17 @@
   "storyVideoRecordFailed": "تعذر تسجيل الفيديو",
   "storySelectMediaFirst": "اختر صورة أو فيديو أولاً",
   "storyPublished": "تم نشر القصة 💜",
-  "storyPublishFailed": "تعذر نشر القصة"
+  "storyPublishFailed": "تعذر نشر القصة",
+  "searchUserHint": "ابحث عن المستخدمين بالاسم أو اسم المستخدم...",
+  "videosTitle": "فيديوهات إيرانا",
+  "noVideosPublished": "لم يتم نشر أي فيديو بعد",
+  "videoByIrana": "فيديو إيرانا",
+  "storyVideoLabel": "فيديو القصة",
+  "defaultProfileName": "مستخدم إيرانا",
+  "shareProfile": "مشاركة الملف الشخصي",
+  "shareProfileComingSoon": "ستتوفر مشاركة الملف الشخصي في تحديث لاحق",
+  "highlights": "القصص المميزة",
+  "selectedStories": "القصص المختارة",
+  "noPostsYet": "لم تنشر أي منشورات بعد",
+  "newHighlight": "جديد"
 }
