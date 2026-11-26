@@ -61,5 +61,20 @@
   "emailInfo": "دریافت خبرها و پیشنهادها از طریق ایمیل",
   "notificationSettingsInfo": "این تنظیمات فعلاً روی همین دستگاه ذخیره می‌شوند و ظاهر و ترجیح انتخابی را نگه می‌دارند. فعال‌سازی اعلان سیستمی و ارسال از سرور در مرحله اتصال زیرساخت انجام می‌شود.",
   "justNow": "همین حالا",
-  "messages": "پیام‌ها"
+  "messages": "پیام‌ها",
+  "postPublished": "پست با موفقیت منتشر شد 💜",
+  "postPublishFailed": "انتشار پست انجام نشد",
+  "postSaved": "پست ذخیره شد",
+  "postUnsaved": "پست از ذخیره‌شده‌ها حذف شد",
+  "editPost": "ویرایش پست",
+  "editPostHint": "متن پست را ویرایش کن",
+  "postEdited": "پست ویرایش شد",
+  "deletePost": "حذف پست",
+  "confirmDeletePost": "آیا مطمئنی می‌خواهی این پست حذف شود؟",
+  "confirmDelete": "بله، حذف شود",
+  "postDeleted": "پست حذف شد",
+  "commentsOpened": "نظرات باز شدند",
+  "commentsClosed": "نظرات بسته شدند",
+  "manageComments": "مدیریت نظرات",
+  "noComments": "نظری ثبت نشده است"
 }
