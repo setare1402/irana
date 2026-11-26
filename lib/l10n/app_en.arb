@@ -59,5 +59,7 @@
   "otherNotifications": "Other notifications",
   "iranaEmails": "IRANA emails",
   "emailInfo": "Receive news and offers by email",
-  "notificationSettingsInfo": "These settings are currently saved on this device and preserve your preferences. System notifications and server delivery will be enabled when the infrastructure is connected."
+  "notificationSettingsInfo": "These settings are currently saved on this device and preserve your preferences. System notifications and server delivery will be enabled when the infrastructure is connected.",
+  "justNow": "Just now",
+  "messages": "Messages"
 }
