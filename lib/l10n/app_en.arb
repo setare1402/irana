@@ -147,5 +147,19 @@
   "settingFavoritesList": "Favorites list",
   "settingFavoritesFuture": "This section will be completed when following and saving features are added.",
   "settingDetailCreated": "A dedicated page for this section has been created",
-  "settingFeatureLater": "Full functionality for this option will be added to Irana in a later phase. Your current app settings and information will remain unchanged."
+  "settingFeatureLater": "Full functionality for this option will be added to Irana in a later phase. Your current app settings and information will remain unchanged.",
+  "createPostTitle": "Create a new post",
+  "choosePhotoVideo": "Choose a photo or video from gallery",
+  "postCaptionHint": "Write your post text and caption...",
+  "publishingNow": "Publishing...",
+  "publishPost": "Publish post",
+  "fileSelectionFailed": "File selection failed",
+  "selectMediaFirst": "Choose a photo or video first",
+  "searchPeopleTopics": "Search people and topics...",
+  "discoverIrana": "Discover the world of IRANA",
+  "noSearchResults": "No results found",
+  "newContentTooltip": "Create new content",
+  "selectPublishTabHint": "To publish content, select the Create tab in the bottom bar",
+  "settingsMenuTooltip": "Settings menu",
+  "iranaWorldTagline": "The beautiful world of IRANA"
 }
