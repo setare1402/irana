@@ -3022,7 +3022,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: ElevatedButton.icon(
                     onPressed: editProfile,
                     icon: const Icon(Icons.edit_rounded, size: 19),
-                    label: const Text('ویرایش پروفایل'),
+                    label: Text(lookupAppLocalizations(iranaLocale.value).profileEditTitle),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5A078D),
                       foregroundColor: Colors.white,
