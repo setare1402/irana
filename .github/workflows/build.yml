@@ -45,8 +45,8 @@ jobs:
                   maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
                   maven { url = uri("https://maven.aliyun.com/repository/google") }
                   maven { url = uri("https://maven.aliyun.com/repository/public") }'''
-          assert s.count(marker) == 2, f'Expected 2 repository blocks in settings.gradle.kts, found {s.count(marker)}'
-          s = s.replace(marker, mirrors, 2)
+          assert s.count(marker) == 1, f'Expected 1 repository block in settings.gradle.kts, found {s.count(marker)}'
+          s = s.replace(marker, mirrors, 1)
           p.write_text(s)
           PY
 
@@ -65,9 +65,9 @@ jobs:
           from pathlib import Path
           p = Path('pubspec.yaml')
           s = p.read_text()
-          old = '  ios: true\n'
+          old = '  ios: true\\n'
           assert s.count(old) == 1, 'Expected exactly one iOS icon setting'
-          p.write_text(s.replace(old, '  ios: false\n', 1))
+          p.write_text(s.replace(old, '  ios: false\\n', 1))
           PY
           dart run flutter_launcher_icons
 
@@ -118,9 +118,9 @@ jobs:
           from pathlib import Path
           p = Path('pubspec.yaml')
           s = p.read_text()
-          old = '  android: true\n'
+          old = '  android: true\\n'
           assert s.count(old) == 1, 'Expected exactly one Android icon setting'
-          p.write_text(s.replace(old, '  android: false\n', 1))
+          p.write_text(s.replace(old, '  android: false\\n', 1))
           PY
           dart run flutter_launcher_icons
 
