@@ -161,21 +161,22 @@ class IranaFollowRequestsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Directionality(
       textDirection: Directionality.of(context),
       child: Scaffold(
         appBar: AppBar(title: Text(l10n.followRequests)),
-        body: const Center(
+        body: Center(
           child: Padding(
-            padding: EdgeInsets.all(28),
+            padding: const EdgeInsets.all(28),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.people_outline, size: 58, color: _purple),
-                SizedBox(height: 14),
-                Text(l10n.noFollowRequests, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
-                SizedBox(height: 8),
-                Text(l10n.followRequestsInfo, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, height: 1.7)),
+                const Icon(Icons.people_outline, size: 58, color: _purple),
+                const SizedBox(height: 14),
+                Text(l10n.noFollowRequests, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+                const SizedBox(height: 8),
+                Text(l10n.followRequestsInfo, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, height: 1.7)),
               ],
             ),
           ),
@@ -247,6 +248,7 @@ class _IranaNotificationSettingsPageState extends State<IranaNotificationSetting
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Directionality(
       textDirection: Directionality.of(context),
       child: Scaffold(
