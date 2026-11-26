@@ -561,7 +561,7 @@ class _IranaHomeState extends State<IranaHome> {
           content: TextField(
             controller: controller,
             maxLines: 5,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: l10n.editPostHint,
               border: OutlineInputBorder(),
             ),
@@ -606,7 +606,7 @@ class _IranaHomeState extends State<IranaHome> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('انصراف'),
+              child: Text(l10n.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
