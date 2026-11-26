@@ -61,5 +61,20 @@
   "emailInfo": "تلقي الأخبار والعروض عبر البريد الإلكتروني",
   "notificationSettingsInfo": "تُحفظ هذه الإعدادات حاليًا على هذا الجهاز للاحتفاظ بتفضيلاتك. سيتم تفعيل إشعارات النظام والإرسال من الخادم عند ربط البنية التحتية.",
   "justNow": "الآن",
-  "messages": "الرسائل"
+  "messages": "الرسائل",
+  "postPublished": "تم نشر المنشور بنجاح 💜",
+  "postPublishFailed": "تعذّر نشر المنشور",
+  "postSaved": "تم حفظ المنشور",
+  "postUnsaved": "تمت إزالة المنشور من المحفوظات",
+  "editPost": "تعديل المنشور",
+  "editPostHint": "عدّل نص المنشور",
+  "postEdited": "تم تعديل المنشور",
+  "deletePost": "حذف المنشور",
+  "confirmDeletePost": "هل أنت متأكد أنك تريد حذف هذا المنشور؟",
+  "confirmDelete": "نعم، احذفه",
+  "postDeleted": "تم حذف المنشور",
+  "commentsOpened": "تم تفعيل التعليقات",
+  "commentsClosed": "تم تعطيل التعليقات",
+  "manageComments": "إدارة التعليقات",
+  "noComments": "لا توجد تعليقات بعد"
 }
