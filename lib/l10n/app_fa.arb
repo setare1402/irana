@@ -191,5 +191,17 @@
   "storyVideoRecordFailed": "ضبط ویدئو انجام نشد",
   "storySelectMediaFirst": "ابتدا عکس یا ویدئو انتخاب کن",
   "storyPublished": "استوری منتشر شد 💜",
-  "storyPublishFailed": "انتشار استوری انجام نشد"
+  "storyPublishFailed": "انتشار استوری انجام نشد",
+  "searchUserHint": "جست‌وجوی کاربر با نام یا شناسه...",
+  "videosTitle": "ویدئوهای ایرانا",
+  "noVideosPublished": "هنوز ویدئویی منتشر نشده است",
+  "videoByIrana": "ویدئوی ایرانا",
+  "storyVideoLabel": "ویدئوی داستان",
+  "defaultProfileName": "کاربر ایرانا",
+  "shareProfile": "اشتراک‌گذاری پروفایل",
+  "shareProfileComingSoon": "اشتراک‌گذاری پروفایل در نسخه بعدی فعال می‌شود",
+  "highlights": "هایلایت‌ها",
+  "selectedStories": "داستان‌های منتخب",
+  "noPostsYet": "هنوز پستی منتشر نکرده‌اید",
+  "newHighlight": "جدید"
 }
