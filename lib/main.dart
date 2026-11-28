@@ -4429,12 +4429,12 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
   String category = 'همه طرح‌ها';
 
   final List<Map<String, dynamic>> freeThemes = const [
-    {'name': 'مزرعه آفتابگردان', 'icon': Icons.wb_sunny_rounded, 'colors': [Color(0xFFFFC857), Color(0xFFED7B24)], 'group': 'دخترانه'},
-    {'name': 'دخترانه رویایی', 'icon': Icons.auto_awesome, 'colors': [Color(0xFFFFA6D5), Color(0xFF8548D8)], 'group': 'دخترانه'},
-    {'name': 'شکوفه‌های صورتی', 'icon': Icons.local_florist_rounded, 'colors': [Color(0xFFFF9BCB), Color(0xFF9B3E9D)], 'group': 'دخترانه'},
-    {'name': 'ماه و دریاچه', 'icon': Icons.nightlight_round, 'colors': [Color(0xFF164E91), Color(0xFF07152F)], 'group': 'پسرانه'},
-    {'name': 'شب مدرن', 'icon': Icons.directions_car_filled_rounded, 'colors': [Color(0xFF35208D), Color(0xFF080B28)], 'group': 'پسرانه'},
-    {'name': 'شیر شاه', 'icon': Icons.pets_rounded, 'colors': [Color(0xFFB97828), Color(0xFF352016)], 'group': 'پسرانه'},
+    {'name': 'شکوفه صورتی', 'icon': Icons.wb_sunny_rounded, 'colors': [Color(0xFFFFC857), Color(0xFFED7B24)], 'group': 'دخترانه'},
+    {'name': 'باغ گل‌ها', 'icon': Icons.auto_awesome, 'colors': [Color(0xFFFFA6D5), Color(0xFF8548D8)], 'group': 'دخترانه'},
+    {'name': 'غروب بنفش', 'icon': Icons.local_florist_rounded, 'colors': [Color(0xFFFF9BCB), Color(0xFF9B3E9D)], 'group': 'دخترانه'},
+    {'name': 'دریای آرام', 'icon': Icons.nightlight_round, 'colors': [Color(0xFF164E91), Color(0xFF07152F)], 'group': 'پسرانه'},
+    {'name': 'شب پرستاره', 'icon': Icons.directions_car_filled_rounded, 'colors': [Color(0xFF35208D), Color(0xFF080B28)], 'group': 'پسرانه'},
+    {'name': 'جاده و طبیعت', 'icon': Icons.pets_rounded, 'colors': [Color(0xFFB97828), Color(0xFF352016)], 'group': 'پسرانه'},
   ];
 
   final List<Map<String, dynamic>> premiumThemes = const [
