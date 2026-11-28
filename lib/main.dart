@@ -73,8 +73,12 @@ Future<void> main() async {
     if (iranaLanguageNames.containsKey(savedLanguage)) {
       iranaLocale.value = Locale(savedLanguage);
     }
+    final savedTheme = prefs.getString('irana_theme') ?? 'پیش‌فرض ایرانا';
+    if (iranaThemePalettes.containsKey(savedTheme)) {
+      iranaThemeName.value = savedTheme;
+    }
   } catch (_) {
-    // Keep the default Persian locale if saved settings cannot be read.
+    // Keep default language and appearance if saved settings cannot be read.
   }
 }
 
@@ -82,6 +86,119 @@ const Color iranaPurple = Color(0xFF7139A8);
 const Color iranaPink = Color(0xFFE84B91);
 const Color iranaBg = Color(0xFFFAF9FC);
 const Color iranaGold = Color(0xFFFFD778);
+
+final ValueNotifier<String> iranaThemeName =
+    ValueNotifier<String>('پیش‌فرض ایرانا');
+
+class IranaThemePalette {
+  final Color primary;
+  final Color background;
+  final Color surface;
+  final Brightness brightness;
+
+  const IranaThemePalette({
+    required this.primary,
+    required this.background,
+    required this.surface,
+    this.brightness = Brightness.light,
+  });
+}
+
+const Map<String, IranaThemePalette> iranaThemePalettes = {
+  'پیش‌فرض ایرانا': IranaThemePalette(
+    primary: iranaPurple,
+    background: Color(0xFFFAF9FC),
+    surface: Colors.white,
+  ),
+  'شکوفه صورتی': IranaThemePalette(
+    primary: Color(0xFFC44D85),
+    background: Color(0xFFFFF7FA),
+    surface: Color(0xFFFFEDF4),
+  ),
+  'باغ گل‌ها': IranaThemePalette(
+    primary: Color(0xFF7A9564),
+    background: Color(0xFFF6FAF3),
+    surface: Color(0xFFEBF3E5),
+  ),
+  'غروب بنفش': IranaThemePalette(
+    primary: Color(0xFF7553A6),
+    background: Color(0xFFF8F5FC),
+    surface: Color(0xFFEFE8F8),
+  ),
+  'دریای آرام': IranaThemePalette(
+    primary: Color(0xFF287E91),
+    background: Color(0xFFF2FAFC),
+    surface: Color(0xFFE4F3F6),
+  ),
+  'شب پرستاره': IranaThemePalette(
+    primary: Color(0xFF829CE0),
+    background: Color(0xFF111827),
+    surface: Color(0xFF202C43),
+    brightness: Brightness.dark,
+  ),
+  'جاده و طبیعت': IranaThemePalette(
+    primary: Color(0xFF638653),
+    background: Color(0xFFF5F8F1),
+    surface: Color(0xFFEAF1E4),
+  ),
+};
+
+ThemeData iranaThemeData(String name) {
+  final palette = iranaThemePalettes[name] ??
+      iranaThemePalettes['پیش‌فرض ایرانا']!;
+  final scheme = ColorScheme.fromSeed(
+    seedColor: palette.primary,
+    brightness: palette.brightness,
+    surface: palette.surface,
+  );
+  return ThemeData(
+    useMaterial3: true,
+    brightness: palette.brightness,
+    scaffoldBackgroundColor: palette.background,
+    colorScheme: scheme,
+    primaryColor: palette.primary,
+    fontFamily: 'Roboto',
+    appBarTheme: AppBarTheme(
+      backgroundColor: palette.surface,
+      foregroundColor: scheme.onSurface,
+      elevation: 0,
+    ),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor: palette.surface,
+      selectedItemColor: palette.primary,
+      unselectedItemColor: scheme.onSurfaceVariant,
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: palette.primary,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: palette.primary,
+        side: BorderSide(color: palette.primary.withOpacity(0.55)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: palette.primary,
+      foregroundColor: Colors.white,
+    ),
+  );
+}
+
+Future<void> applyIranaTheme(String name) async {
+  if (!iranaThemePalettes.containsKey(name)) return;
+  iranaThemeName.value = name;
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('irana_theme', name);
+}
 
 class IranaApp extends StatelessWidget {
   const IranaApp({super.key});
@@ -91,32 +208,28 @@ class IranaApp extends StatelessWidget {
     return ValueListenableBuilder<Locale>(
       valueListenable: iranaLocale,
       builder: (context, locale, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'IRANA',
-          locale: locale,
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          // Use English for Flutter's built-in Material labels.
-          // The selected app language still controls IRANA's text direction.
-          supportedLocales: const [
-            Locale('en'),
-          ],
-          localeResolutionCallback: (deviceLocale, supportedLocales) =>
-              const Locale('en'),
-          theme: ThemeData(
-            useMaterial3: true,
-            scaffoldBackgroundColor: iranaBg,
-            colorScheme: ColorScheme.fromSeed(seedColor: iranaPurple),
-            fontFamily: 'Roboto',
-          ),
-          home: Directionality(
-            textDirection: directionForLanguage(locale.languageCode),
-            child: const IranaHome(),
-          ),
+        return ValueListenableBuilder<String>(
+          valueListenable: iranaThemeName,
+          builder: (context, themeName, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'IRANA',
+              locale: locale,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('en')],
+              localeResolutionCallback: (deviceLocale, supportedLocales) =>
+                  const Locale('en'),
+              theme: iranaThemeData(themeName),
+              home: Directionality(
+                textDirection: directionForLanguage(locale.languageCode),
+                child: const IranaHome(),
+              ),
+            );
+          },
         );
       },
     );
@@ -1219,12 +1332,13 @@ class _IranaHomeState extends State<IranaHome> {
         appBar: selectedIndex == 4
             ? null
             : AppBar(
-                backgroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
                 elevation: 0,
-                title: const Text(
+                title: Text(
                   'IRANA',
                   style: TextStyle(
-                    color: iranaPurple,
+                    color: Theme.of(context).colorScheme.primary,
                     fontSize: 27,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.5,
@@ -1243,7 +1357,7 @@ class _IranaHomeState extends State<IranaHome> {
                     },
                     icon: const Icon(
                       Icons.grid_view_rounded,
-                      color: Color(0xFF7B3FB3),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   IconButton(
@@ -1257,7 +1371,7 @@ class _IranaHomeState extends State<IranaHome> {
                     },
                     icon: const Icon(
                       Icons.favorite_border,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(width: 5),
@@ -1306,11 +1420,11 @@ class _IranaHomeState extends State<IranaHome> {
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           type: BottomNavigationBarType.fixed,
           currentIndex: selectedIndex,
-          selectedItemColor: iranaPurple,
-          unselectedItemColor: Colors.black54,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
           selectedFontSize: 11,
           unselectedFontSize: 10,
           onTap: (index) {
@@ -4007,7 +4121,20 @@ class IranaThemeShopPage extends StatefulWidget {
 }
 
 class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
-  String selectedTheme = 'پیش‌فرض ایرانا';
+  Future<void> selectFreeTheme(String name) async {
+    try {
+      await applyIranaTheme(name);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('طرح «$name» روی برنامه اعمال و ذخیره شد.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ذخیره طرح انجام نشد؛ دوباره تلاش کن.')),
+      );
+    }
+  }
 
   final List<Map<String, dynamic>> freeThemes = const [
     {'name': 'شکوفه صورتی', 'icon': Icons.local_florist, 'color': Color(0xFFF4B7D2)},
@@ -4016,7 +4143,6 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
     {'name': 'دریای آرام', 'icon': Icons.waves, 'color': Color(0xFF83C5D8)},
     {'name': 'شب پرستاره', 'icon': Icons.nightlight_round, 'color': Color(0xFF455A91)},
     {'name': 'جاده و طبیعت', 'icon': Icons.landscape, 'color': Color(0xFF8DAE83)},
-    {'name': 'طلایی کلاسیک', 'icon': Icons.auto_awesome, 'color': Color(0xFFD7B66D)},
   ];
 
   final List<Map<String, dynamic>> premiumThemes = const [
@@ -4048,17 +4174,10 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
     final name = theme['name'] as String;
     final color = theme['color'] as Color;
     final icon = theme['icon'] as IconData;
-    final selected = selectedTheme == name;
+    final selected = iranaThemeName.value == name;
     return InkWell(
       borderRadius: BorderRadius.circular(18),
-      onTap: premium
-          ? showPurchaseNotice
-          : () {
-              setState(() => selectedTheme = name);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('طرح «$name» انتخاب شد؛ اعمال سراسری پوسته در مرحله تکمیل ظاهر برنامه انجام می‌شود.')),
-              );
-            },
+      onTap: premium ? showPurchaseNotice : () => selectFreeTheme(name),
       child: Container(
         decoration: BoxDecoration(
           color: color.withOpacity(0.18),
@@ -4101,12 +4220,9 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
     return Directionality(
       textDirection: iranaTextDirection,
       child: Scaffold(
-        backgroundColor: const Color(0xFFFAF8FC),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('فروشگاه پوسته‌های IRANA'),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          elevation: 0,
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
@@ -4184,7 +4300,7 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
             const SizedBox(height: 16),
             Center(
               child: TextButton.icon(
-                onPressed: () => setState(() => selectedTheme = 'پیش‌فرض ایرانا'),
+                onPressed: () => selectFreeTheme('پیش‌فرض ایرانا'),
                 icon: const Icon(Icons.restart_alt),
                 label: const Text('بازگشت به ظاهر پیش‌فرض'),
               ),
