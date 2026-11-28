@@ -329,13 +329,15 @@ class IranaApp extends StatelessWidget {
                   const Locale('en'),
               theme: iranaThemeData(themeName),
               builder: (context, child) {
-                if (themeName != 'شب پرستاره') {
+                if (themeName == 'پیش‌فرض ایرانا') {
                   return child ?? const SizedBox.shrink();
                 }
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    const CustomPaint(painter: IranaStarryBackgroundPainter()),
+                    CustomPaint(
+                      painter: IranaThemeBackgroundPainter(themeName),
+                    ),
                     child ?? const SizedBox.shrink(),
                   ],
                 );
@@ -350,6 +352,126 @@ class IranaApp extends StatelessWidget {
       },
     );
   }
+}
+
+class IranaThemeBackgroundPainter extends CustomPainter {
+  final String themeName;
+  const IranaThemeBackgroundPainter(this.themeName);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final colors = switch (themeName) {
+      'شکوفه صورتی' => [const Color(0xFF35172D), const Color(0xFF7B315C), const Color(0xFF241426)],
+      'باغ گل‌ها' => [const Color(0xFF172C22), const Color(0xFF35583D), const Color(0xFF15251D)],
+      'غروب بنفش' => [const Color(0xFF21163D), const Color(0xFF684080), const Color(0xFFCE795F)],
+      'دریای آرام' => [const Color(0xFF092B42), const Color(0xFF17627A), const Color(0xFF102D45)],
+      'شب پرستاره' => [const Color(0xFF080D24), const Color(0xFF151A3B), const Color(0xFF090F22)],
+      'جاده و طبیعت' => [const Color(0xFF172B32), const Color(0xFF3E604E), const Color(0xFF182A2A)],
+      _ => [const Color(0xFF202033), const Color(0xFF303044), const Color(0xFF202033)],
+    };
+    final base = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: colors,
+      ).createShader(rect);
+    canvas.drawRect(rect, base);
+
+    final softGlow = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.white.withOpacity(0.12), Colors.transparent],
+      ).createShader(Rect.fromCircle(
+        center: Offset(size.width * .78, size.height * .17),
+        radius: size.width * .65,
+      ));
+    canvas.drawRect(rect, softGlow);
+
+    if (themeName == 'شب پرستاره') {
+      const points = [
+        Offset(.08,.08), Offset(.22,.15), Offset(.39,.07), Offset(.57,.19),
+        Offset(.73,.08), Offset(.91,.22), Offset(.14,.34), Offset(.31,.28),
+        Offset(.49,.39), Offset(.67,.32), Offset(.86,.43), Offset(.06,.57),
+        Offset(.25,.51), Offset(.44,.62), Offset(.62,.54), Offset(.81,.65),
+        Offset(.95,.76), Offset(.13,.82), Offset(.35,.76), Offset(.55,.88),
+        Offset(.75,.84), Offset(.91,.94), Offset(.04,.95), Offset(.48,.12),
+      ];
+      final star = Paint()..color = const Color(0xFFE9E5FF);
+      for (var i = 0; i < points.length; i++) {
+        final p = Offset(points[i].dx * size.width, points[i].dy * size.height);
+        canvas.drawCircle(p, i % 5 == 0 ? 1.8 : 1.0, star);
+      }
+      final moon = Offset(size.width * .82, size.height * .12);
+      canvas.drawCircle(moon, 23, Paint()..color = const Color(0xFFFFE8A6));
+      canvas.drawCircle(moon.translate(10, -8), 22,
+          Paint()..color = const Color(0xFF151A3B));
+    } else if (themeName == 'شکوفه صورتی') {
+      final petal = Paint()..color = const Color(0x55FFC4DE);
+      for (final p in [Offset(.12,.18), Offset(.82,.27), Offset(.25,.73), Offset(.91,.83)]) {
+        final center = Offset(p.dx * size.width, p.dy * size.height);
+        for (var i = 0; i < 5; i++) {
+          final a = i * math.pi * 2 / 5;
+          canvas.drawCircle(center.translate(math.cos(a)*10, math.sin(a)*10), 8, petal);
+        }
+        canvas.drawCircle(center, 4, Paint()..color = const Color(0x99FFE6A8));
+      }
+    } else if (themeName == 'باغ گل‌ها') {
+      final leaf = Paint()..color = const Color(0x4439C77A);
+      for (final p in [Offset(.08,.24), Offset(.9,.36), Offset(.18,.78), Offset(.82,.86)]) {
+        final center = Offset(p.dx * size.width, p.dy * size.height);
+        canvas.save();
+        canvas.translate(center.dx, center.dy);
+        canvas.rotate(-.55);
+        canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 42, height: 18), leaf);
+        canvas.drawLine(const Offset(-20,0), const Offset(20,0),
+            Paint()..color = const Color(0x557DD99B)..strokeWidth = 1);
+        canvas.restore();
+      }
+    } else if (themeName == 'غروب بنفش') {
+      final sun = Offset(size.width*.78, size.height*.22);
+      canvas.drawCircle(sun, 38, Paint()..color = const Color(0x88FFC58D));
+      final hill = Paint()..color = const Color(0x44301B55);
+      final path = Path()
+        ..moveTo(0, size.height*.48)
+        ..quadraticBezierTo(size.width*.35, size.height*.25, size.width*.58, size.height*.48)
+        ..quadraticBezierTo(size.width*.8, size.height*.65, size.width, size.height*.42)
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)..close();
+      canvas.drawPath(path, hill);
+    } else if (themeName == 'دریای آرام') {
+      final wave = Paint()
+        ..color = const Color(0x4437C5D9)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3;
+      for (var i = 0; i < 5; i++) {
+        final y = size.height * (.35 + i * .12);
+        final path = Path()
+          ..moveTo(0, y)
+          ..quadraticBezierTo(size.width*.25, y-22, size.width*.5, y)
+          ..quadraticBezierTo(size.width*.75, y+22, size.width, y);
+        canvas.drawPath(path, wave);
+      }
+    } else if (themeName == 'جاده و طبیعت') {
+      final hill = Paint()..color = const Color(0x554E8865);
+      final path = Path()
+        ..moveTo(0, size.height*.52)
+        ..quadraticBezierTo(size.width*.22, size.height*.22, size.width*.45, size.height*.52)
+        ..quadraticBezierTo(size.width*.72, size.height*.18, size.width, size.height*.48)
+        ..lineTo(size.width, size.height)..lineTo(0, size.height)..close();
+      canvas.drawPath(path, hill);
+      final road = Path()
+        ..moveTo(size.width*.43, size.height)
+        ..quadraticBezierTo(size.width*.52, size.height*.68, size.width*.49, size.height*.48)
+        ..lineTo(size.width*.58, size.height*.48)
+        ..quadraticBezierTo(size.width*.56, size.height*.72, size.width*.7, size.height)
+        ..close();
+      canvas.drawPath(road, Paint()..color = const Color(0x553D4140));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant IranaThemeBackgroundPainter oldDelegate) =>
+      oldDelegate.themeName != themeName;
 }
 
 class IranaStarryBackgroundPainter extends CustomPainter {
