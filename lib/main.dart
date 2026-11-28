@@ -3885,13 +3885,20 @@ class IranaSettingsPage extends StatelessWidget {
       icon: Icons.home_outlined,
       description: 'تنظیمات مربوط به تعاملات و نمایش محتوا',
     ),
+    IranaMenuItem(
+      title: 'فروشگاه پوسته‌ها و ظاهر برنامه',
+      icon: Icons.palette_outlined,
+      description: 'انتخاب طرح‌های رایگان و خرید پوسته‌های ویژه و پس‌زمینه دلخواه',
+    ),
   ];
 
   void openItem(BuildContext context, IranaMenuItem item) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => IranaSettingDetailPage(item: item),
+        builder: (_) => item.title == 'فروشگاه پوسته‌ها و ظاهر برنامه'
+            ? const IranaThemeShopPage()
+            : IranaSettingDetailPage(item: item),
       ),
     );
   }
@@ -3952,6 +3959,205 @@ class IranaSettingsPage extends StatelessWidget {
             sectionTitle('برنامه و رسانه‌های شما'),
             ...menuItems.skip(24).map((item) => menuTile(context, item)),
             const SizedBox(height: 30),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- THEME SHOP ----------------
+
+class IranaThemeShopPage extends StatefulWidget {
+  const IranaThemeShopPage({super.key});
+
+  @override
+  State<IranaThemeShopPage> createState() => _IranaThemeShopPageState();
+}
+
+class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
+  String selectedTheme = 'پیش‌فرض ایرانا';
+
+  final List<Map<String, dynamic>> freeThemes = const [
+    {'name': 'شکوفه صورتی', 'icon': Icons.local_florist, 'color': Color(0xFFF4B7D2)},
+    {'name': 'باغ گل‌ها', 'icon': Icons.spa, 'color': Color(0xFFD8B8E8)},
+    {'name': 'غروب بنفش', 'icon': Icons.wb_twilight, 'color': Color(0xFF9B83C9)},
+    {'name': 'دریای آرام', 'icon': Icons.waves, 'color': Color(0xFF83C5D8)},
+    {'name': 'شب پرستاره', 'icon': Icons.nightlight_round, 'color': Color(0xFF455A91)},
+    {'name': 'جاده و طبیعت', 'icon': Icons.landscape, 'color': Color(0xFF8DAE83)},
+    {'name': 'طلایی کلاسیک', 'icon': Icons.auto_awesome, 'color': Color(0xFFD7B66D)},
+  ];
+
+  final List<Map<String, dynamic>> premiumThemes = const [
+    {'name': 'سلطنتی طلایی', 'icon': Icons.workspace_premium, 'color': Color(0xFFD4AF37)},
+    {'name': 'نئون شبانه', 'icon': Icons.bolt, 'color': Color(0xFF7C4DFF)},
+    {'name': 'عاشقانه لوکس', 'icon': Icons.favorite, 'color': Color(0xFFE779A8)},
+    {'name': 'فضایی سه‌بعدی', 'icon': Icons.rocket_launch, 'color': Color(0xFF536DFE)},
+  ];
+
+  void showPurchaseNotice() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('پوسته ویژه'),
+        content: const Text(
+          'این قابلیت پولی است. در نسخه فعلی بخش فروش و قفل خرید طراحی شده؛ فعال‌سازی واقعی پس از اتصال درگاه پرداخت و سرور انجام می‌شود.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('متوجه شدم'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget themeTile(Map<String, dynamic> theme, {required bool premium}) {
+    final name = theme['name'] as String;
+    final color = theme['color'] as Color;
+    final icon = theme['icon'] as IconData;
+    final selected = selectedTheme == name;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: premium
+          ? showPurchaseNotice
+          : () {
+              setState(() => selectedTheme = name);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('طرح «$name» انتخاب شد؛ اعمال سراسری پوسته در مرحله تکمیل ظاهر برنامه انجام می‌شود.')),
+              );
+            },
+      child: Container(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? iranaPurple : color.withValues(alpha: 0.65),
+            width: selected ? 3 : 1,
+          ),
+        ),
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 34, color: color.withValues(alpha: 1)),
+            const SizedBox(height: 9),
+            Text(name, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (premium) ...[
+              const SizedBox(height: 5),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock, size: 14, color: Colors.orange),
+                  SizedBox(width: 4),
+                  Text('ویژه · خریدنی', style: TextStyle(fontSize: 11, color: Colors.orange)),
+                ],
+              ),
+            ],
+            if (selected) ...[
+              const SizedBox(height: 5),
+              const Icon(Icons.check_circle, color: iranaPurple, size: 18),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: iranaTextDirection,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFAF8FC),
+        appBar: AppBar(
+          title: const Text('فروشگاه پوسته‌های IRANA'),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 0,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text(
+              'با انتخاب یک طرح، ظاهر هماهنگ برنامه شامل رنگ‌ها، دکمه‌ها و منوها تغییر خواهد کرد.',
+              style: TextStyle(color: Colors.black54, height: 1.8),
+            ),
+            const SizedBox(height: 18),
+            const Text('طرح‌های رایگان', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: freeThemes.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
+              ),
+              itemBuilder: (_, index) => themeTile(freeThemes[index], premium: false),
+            ),
+            const SizedBox(height: 24),
+            const Text('پوسته‌های ویژه و پولی', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: premiumThemes.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
+              ),
+              itemBuilder: (_, index) => themeTile(premiumThemes[index], premium: true),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Column(
+                children: [
+                  const Icon(Icons.photo_library_outlined, size: 38, color: Colors.deepOrange),
+                  const SizedBox(height: 8),
+                  const Text('پس‌زمینه دلخواه از گالری', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'این قابلیت پولی است و تا زمان خرید قفل می‌ماند. پس از خرید، می‌توانید عکس گالری را برای پس‌زمینه صفحات برنامه انتخاب کنید.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(height: 1.7, color: Colors.black54),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: showPurchaseNotice,
+                      icon: const Icon(Icons.lock_outline),
+                      label: const Text('خرید و فعال‌سازی انتخاب از گالری'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: iranaPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => setState(() => selectedTheme = 'پیش‌فرض ایرانا'),
+                icon: const Icon(Icons.restart_alt),
+                label: const Text('بازگشت به ظاهر پیش‌فرض'),
+              ),
+            ),
           ],
         ),
       ),
