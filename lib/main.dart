@@ -4426,10 +4426,32 @@ class IranaThemeShopPage extends StatefulWidget {
 }
 
 class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
+  String category = 'همه طرح‌ها';
+
+  final List<Map<String, dynamic>> freeThemes = const [
+    {'name': 'مزرعه آفتابگردان', 'icon': Icons.wb_sunny_rounded, 'colors': [Color(0xFFFFC857), Color(0xFFED7B24)], 'group': 'دخترانه'},
+    {'name': 'دخترانه رویایی', 'icon': Icons.auto_awesome, 'colors': [Color(0xFFFFA6D5), Color(0xFF8548D8)], 'group': 'دخترانه'},
+    {'name': 'شکوفه‌های صورتی', 'icon': Icons.local_florist_rounded, 'colors': [Color(0xFFFF9BCB), Color(0xFF9B3E9D)], 'group': 'دخترانه'},
+    {'name': 'ماه و دریاچه', 'icon': Icons.nightlight_round, 'colors': [Color(0xFF164E91), Color(0xFF07152F)], 'group': 'پسرانه'},
+    {'name': 'شب مدرن', 'icon': Icons.directions_car_filled_rounded, 'colors': [Color(0xFF35208D), Color(0xFF080B28)], 'group': 'پسرانه'},
+    {'name': 'شیر شاه', 'icon': Icons.pets_rounded, 'colors': [Color(0xFFB97828), Color(0xFF352016)], 'group': 'پسرانه'},
+  ];
+
+  final List<Map<String, dynamic>> premiumThemes = const [
+    {'name': 'پروانه بنفش', 'icon': Icons.flutter_dash_rounded, 'colors': [Color(0xFF7B1FA2), Color(0xFF210047)]},
+    {'name': 'قلب‌های نئونی', 'icon': Icons.favorite_rounded, 'colors': [Color(0xFFFF238D), Color(0xFF3B003C)]},
+    {'name': 'عمارت طلایی', 'icon': Icons.castle_rounded, 'colors': [Color(0xFFD69B28), Color(0xFF17294B)]},
+    {'name': 'رزهای عاشقانه', 'icon': Icons.local_florist_rounded, 'colors': [Color(0xFFE83E83), Color(0xFF35102E)]},
+    {'name': 'پاریس شبانه', 'icon': Icons.location_city_rounded, 'colors': [Color(0xFFB832B8), Color(0xFF101A50)]},
+    {'name': 'قصر ماه', 'icon': Icons.nightlight_round, 'colors': [Color(0xFF315BBE), Color(0xFF130B42)]},
+    {'name': 'کهکشان', 'icon': Icons.auto_awesome_rounded, 'colors': [Color(0xFF8D26E8), Color(0xFF07143B)]},
+  ];
+
   Future<void> selectFreeTheme(String name) async {
     try {
       await applyIranaTheme(name);
       if (!mounted) return;
+      setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('طرح «$name» روی برنامه اعمال و ذخیره شد.')),
       );
@@ -4441,29 +4463,13 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
     }
   }
 
-  final List<Map<String, dynamic>> freeThemes = const [
-    {'name': 'شکوفه صورتی', 'icon': Icons.local_florist, 'color': Color(0xFFF4B7D2)},
-    {'name': 'باغ گل‌ها', 'icon': Icons.spa, 'color': Color(0xFFD8B8E8)},
-    {'name': 'غروب بنفش', 'icon': Icons.wb_twilight, 'color': Color(0xFF9B83C9)},
-    {'name': 'دریای آرام', 'icon': Icons.waves, 'color': Color(0xFF83C5D8)},
-    {'name': 'شب پرستاره', 'icon': Icons.nightlight_round, 'color': Color(0xFF455A91)},
-    {'name': 'جاده و طبیعت', 'icon': Icons.landscape, 'color': Color(0xFF8DAE83)},
-  ];
-
-  final List<Map<String, dynamic>> premiumThemes = const [
-    {'name': 'سلطنتی طلایی', 'icon': Icons.workspace_premium, 'color': Color(0xFFD4AF37)},
-    {'name': 'نئون شبانه', 'icon': Icons.bolt, 'color': Color(0xFF7C4DFF)},
-    {'name': 'عاشقانه لوکس', 'icon': Icons.favorite, 'color': Color(0xFFE779A8)},
-    {'name': 'فضایی سه‌بعدی', 'icon': Icons.rocket_launch, 'color': Color(0xFF536DFE)},
-  ];
-
   void showPurchaseNotice() {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('پوسته ویژه'),
+        title: const Text('نسخه ویژه IRANA'),
         content: const Text(
-          'این قابلیت پولی است. در نسخه فعلی بخش فروش و قفل خرید طراحی شده؛ فعال‌سازی واقعی پس از اتصال درگاه پرداخت و سرور انجام می‌شود.',
+          'این پوسته و انتخاب تصویر از گالری، قابلیت پولی هستند. قفل و صفحه خرید در این نسخه نمایشی است؛ فعال‌سازی و ثبت دائمی خرید پس از اتصال درگاه پرداخت و سرور انجام می‌شود.',
         ),
         actions: [
           TextButton(
@@ -4475,45 +4481,90 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
     );
   }
 
-  Widget themeTile(Map<String, dynamic> theme, {required bool premium}) {
+  Widget categoryChip(String title, IconData icon) {
+    final selected = category == title;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(end: 8),
+      child: ChoiceChip(
+        selected: selected,
+        onSelected: (_) => setState(() => category = title),
+        avatar: Icon(icon, size: 17, color: selected ? Colors.white : const Color(0xFF512080)),
+        label: Text(title),
+        labelStyle: TextStyle(
+          color: selected ? Colors.white : const Color(0xFF32134E),
+          fontWeight: FontWeight.w800,
+          fontSize: 12,
+        ),
+        selectedColor: const Color(0xFF7A16E8),
+        backgroundColor: const Color(0xFFEAD8FF),
+        side: BorderSide(color: selected ? const Color(0xFFFFB8FF) : Colors.white70),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        showCheckmark: false,
+      ),
+    );
+  }
+
+  Widget themeCard(Map<String, dynamic> theme, {required bool premium}) {
     final name = theme['name'] as String;
-    final color = theme['color'] as Color;
+    final colors = (theme['colors'] as List<Color>);
     final icon = theme['icon'] as IconData;
     final selected = iranaThemeName.value == name;
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
+    return GestureDetector(
       onTap: premium ? showPurchaseNotice : () => selectFreeTheme(name),
       child: Container(
+        width: 126,
+        height: 188,
+        margin: const EdgeInsetsDirectional.only(end: 9),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.18),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected ? iranaPurple : color.withOpacity(0.65),
-            width: selected ? 3 : 1,
+          borderRadius: BorderRadius.circular(19),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: colors,
           ),
+          border: Border.all(
+            color: selected ? const Color(0xFFFFE77A) : Colors.white.withOpacity(.8),
+            width: selected ? 3 : 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(color: colors.first.withOpacity(.38), blurRadius: 12, offset: const Offset(0, 5)),
+          ],
         ),
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
           children: [
-            Icon(icon, size: 34, color: color.withOpacity(1)),
-            const SizedBox(height: 9),
-            Text(name, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (premium) ...[
-              const SizedBox(height: 5),
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.lock, size: 14, color: Colors.orange),
-                  SizedBox(width: 4),
-                  Text('ویژه · خریدنی', style: TextStyle(fontSize: 11, color: Colors.orange)),
-                ],
+            Positioned(top: -18, right: -15, child: Icon(icon, size: 104, color: Colors.white.withOpacity(.12))),
+            Positioned(top: 22, left: 0, right: 0, child: Icon(icon, size: 58, color: Colors.white.withOpacity(.92))),
+            Positioned(
+              top: 9,
+              right: 9,
+              child: selected
+                  ? const CircleAvatar(radius: 13, backgroundColor: Color(0xFF8B18E8), child: Icon(Icons.check, color: Colors.white, size: 17))
+                  : premium
+                      ? const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD54F), size: 24)
+                      : const SizedBox.shrink(),
+            ),
+            if (premium)
+              const Positioned(left: 0, right: 0, bottom: 43, child: Icon(Icons.lock_rounded, color: Colors.white, size: 23)),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(.62),
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
+                ),
+                child: Text(
+                  name,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
+                ),
               ),
-            ],
-            if (selected) ...[
-              const SizedBox(height: 5),
-              const Icon(Icons.check_circle, color: iranaPurple, size: 18),
-            ],
+            ),
           ],
         ),
       ),
@@ -4522,95 +4573,173 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
 
   @override
   Widget build(BuildContext context) {
+    final visibleThemes = freeThemes.where((theme) {
+      if (category == 'همه طرح‌ها') return true;
+      if (category == 'دخترانه' || category == 'پسرانه') return theme['group'] == category;
+      return true;
+    }).toList();
+
     return Directionality(
       textDirection: iranaTextDirection,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: const Text('فروشگاه پوسته‌های IRANA'),
-        ),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'با انتخاب یک طرح، ظاهر هماهنگ برنامه شامل رنگ‌ها، دکمه‌ها و منوها تغییر خواهد کرد.',
-              style: TextStyle(color: Colors.black54, height: 1.8),
+        backgroundColor: const Color(0xFF241052),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF25005B), Color(0xFF6320A5), Color(0xFF190A49)],
             ),
-            const SizedBox(height: 18),
-            const Text('طرح‌های رایگان', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: freeThemes.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.15,
-              ),
-              itemBuilder: (_, index) => themeTile(freeThemes[index], premium: false),
-            ),
-            const SizedBox(height: 24),
-            const Text('پوسته‌های ویژه و پولی', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: premiumThemes.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.15,
-              ),
-              itemBuilder: (_, index) => themeTile(premiumThemes[index], premium: true),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.orange.shade200),
-              ),
-              child: Column(
-                children: [
-                  const Icon(Icons.photo_library_outlined, size: 38, color: Colors.deepOrange),
-                  const SizedBox(height: 8),
-                  const Text('پس‌زمینه دلخواه از گالری', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'این قابلیت پولی است و تا زمان خرید قفل می‌ماند. پس از خرید، می‌توانید عکس گالری را برای پس‌زمینه صفحات برنامه انتخاب کنید.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(height: 1.7, color: Colors.black54),
+          ),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF17003D), Color(0xFF5410A0), Color(0xFF230052)]),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: const Color(0xFFFFB7FF), width: 1.2),
+                    boxShadow: const [BoxShadow(color: Color(0x887E22CE), blurRadius: 18)],
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: showPurchaseNotice,
-                      icon: const Icon(Icons.lock_outline),
-                      label: const Text('خرید و فعال‌سازی انتخاب از گالری'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: iranaPurple,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.maybePop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
                       ),
-                    ),
+                      const Icon(Icons.palette_rounded, color: Color(0xFFFFD6FF), size: 27),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text('تنظیمات ظاهر برنامه', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFFFD36A)), borderRadius: BorderRadius.circular(15)),
+                        child: const Row(children: [
+                          Text('نسخه ویژه', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                          SizedBox(width: 4),
+                          Icon(Icons.workspace_premium, color: Color(0xFFFFD54F), size: 17),
+                        ]),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: [
+                    categoryChip('همه طرح‌ها', Icons.star_rounded),
+                    categoryChip('دخترانه', Icons.local_florist_rounded),
+                    categoryChip('پسرانه', Icons.workspace_premium_rounded),
+                    categoryChip('خاص و فانتزی', Icons.auto_awesome_rounded),
+                    categoryChip('عکس دلخواه', Icons.photo_library_rounded),
+                  ]),
+                ),
+                const SizedBox(height: 17),
+                const Row(children: [
+                  Icon(Icons.auto_awesome, color: Color(0xFFFFE27A), size: 19),
+                  SizedBox(width: 7),
+                  Text('پوسته‌های رایگان', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)),
+                ]),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 190,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: visibleThemes.map((theme) => themeCard(theme, premium: false)).toList(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Row(children: [
+                  Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD54F), size: 20),
+                  SizedBox(width: 7),
+                  Text('پوسته‌های ویژه و پولی', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)),
+                  Spacer(),
+                  Text('قفل تا زمان خرید', style: TextStyle(color: Color(0xFFFFE39A), fontSize: 10)),
+                ]),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 190,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: premiumThemes.map((theme) => themeCard(theme, premium: true)).toList(),
+                  ),
+                ),
+                const SizedBox(height: 17),
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF210052), Color(0xFF4A0C8A)]),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: const Color(0xFFDFA7FF), width: 1.2),
+                    boxShadow: const [BoxShadow(color: Color(0x667C20D9), blurRadius: 14)],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.photo_library_rounded, color: Color(0xFFFFD6FF), size: 43),
+                      const SizedBox(width: 12),
+                      const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('عکس دلخواه خود را انتخاب کنید', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                        SizedBox(height: 5),
+                        Text('پس‌زمینه صفحات را با عکس گالری گوشی شخصی‌سازی کنید؛ این امکان ویژه و پولی است.', style: TextStyle(color: Color(0xFFEAD8FF), fontSize: 11, height: 1.6)),
+                      ])),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: showPurchaseNotice,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8A16EA),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFE9B8FF))),
+                        ),
+                        child: const Icon(Icons.lock_outline_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF35100D), Color(0xFF7B3D0A), Color(0xFF32100D)]),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFD45B), width: 1.4),
+                  ),
+                  child: Row(children: [
+                    const Icon(Icons.workspace_premium, color: Color(0xFFFFD54F), size: 38),
+                    const SizedBox(width: 10),
+                    const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('ارتقا به نسخه ویژه', style: TextStyle(color: Color(0xFFFFE36D), fontWeight: FontWeight.w900, fontSize: 15)),
+                      Text('دسترسی به همه طرح‌ها و امکانات بیشتر', style: TextStyle(color: Colors.white, fontSize: 10)),
+                    ])),
+                    ElevatedButton.icon(
+                      onPressed: showPurchaseNotice,
+                      icon: const Icon(Icons.shopping_cart_rounded, size: 17),
+                      label: const Text('خرید اشتراک', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFC928), foregroundColor: const Color(0xFF482000), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 15),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () => selectFreeTheme('پیش‌فرض ایرانا'),
+                    icon: const Icon(Icons.restart_alt_rounded, color: Colors.white),
+                    label: const Text('بازگشت به ظاهر پیش‌فرض برنامه', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: TextButton.styleFrom(backgroundColor: const Color(0x44FFFFFF), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), shape: const StadiumBorder()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'خرید پوسته‌ها و فعال‌سازی انتخاب عکس گالری پس از اتصال درگاه پرداخت و سرور انجام می‌شود.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFFDCCBFA), fontSize: 10, height: 1.6),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Center(
-              child: TextButton.icon(
-                onPressed: () => selectFreeTheme('پیش‌فرض ایرانا'),
-                icon: const Icon(Icons.restart_alt),
-                label: const Text('بازگشت به ظاهر پیش‌فرض'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
