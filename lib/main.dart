@@ -1355,7 +1355,7 @@ class _IranaHomeState extends State<IranaHome> {
                         ),
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.grid_view_rounded,
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -1369,7 +1369,7 @@ class _IranaHomeState extends State<IranaHome> {
                         ),
                       );
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.favorite_border,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
