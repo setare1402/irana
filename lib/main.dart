@@ -4030,10 +4030,10 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
             },
       child: Container(
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.18),
+          color: color.withOpacity(0.18),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? iranaPurple : color.withValues(alpha: 0.65),
+            color: selected ? iranaPurple : color.withOpacity(0.65),
             width: selected ? 3 : 1,
           ),
         ),
@@ -4041,7 +4041,7 @@ class _IranaThemeShopPageState extends State<IranaThemeShopPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 34, color: color.withValues(alpha: 1)),
+            Icon(icon, size: 34, color: color.withOpacity(1)),
             const SizedBox(height: 9),
             Text(name, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
             if (premium) ...[
