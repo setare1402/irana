@@ -4274,6 +4274,283 @@ class _IranaSettingDetailPageState extends State<IranaSettingDetailPage> {
   }
 }
 
+// ---------------- LIVE STREAM ----------------
+
+class IranaLivePage extends StatefulWidget {
+  const IranaLivePage({super.key});
+
+  @override
+  State<IranaLivePage> createState() => _IranaLivePageState();
+}
+
+class _IranaLivePageState extends State<IranaLivePage> {
+  final TextEditingController commentController = TextEditingController();
+  final TextEditingController inviteController = TextEditingController();
+  final List<String> comments = [];
+  final List<String> invitedViewers = [];
+  int likes = 0;
+  bool participationRequested = false;
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    inviteController.dispose();
+    super.dispose();
+  }
+
+  void showServerNotice(String title) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: const Text(
+          'این بخش در نسخه فعلی نمایشی است. ارسال و دریافت زنده اطلاعات، شمارش آنلاین بینندگان و ارتباط تصویری پس از اتصال سرور فعال می‌شود.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('متوجه شدم'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void sendComment() {
+    final value = commentController.text.trim();
+    if (value.isEmpty) return;
+    setState(() {
+      comments.insert(0, 'شما: $value');
+      commentController.clear();
+    });
+  }
+
+  Future<void> addViewer() async {
+    inviteController.clear();
+    final username = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          title: const Text('افزودن بیننده به لایو'),
+          content: TextField(
+            controller: inviteController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'نام کاربری یا آیدی بیننده',
+              hintText: 'مثلاً user123',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('انصراف'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                inviteController.text.trim().replaceFirst(RegExp(r'^@'), ''),
+              ),
+              child: const Text('افزودن'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (username == null || username.isEmpty || !mounted) return;
+    setState(() {
+      if (!invitedViewers.contains(username)) invitedViewers.add(username);
+    });
+    showServerNotice('دعوت بیننده');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF17131D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF24202B),
+          foregroundColor: Colors.white,
+          title: const Text('پخش زنده IRANA'),
+          actions: [
+            IconButton(
+              tooltip: 'آمار بینندگان آنلاین',
+              onPressed: () => showServerNotice('آمار بینندگان آنلاین'),
+              icon: const Icon(Icons.people_alt_outlined),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              flex: 5,
+              child: Container(
+                margin: const EdgeInsets.all(12),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF332B3D),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Stack(
+                  children: [
+                    const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.live_tv_rounded, color: Colors.white70, size: 74),
+                          SizedBox(height: 12),
+                          Text('محیط تصویر پخش زنده', style: TextStyle(color: Colors.white, fontSize: 17)),
+                          SizedBox(height: 6),
+                          Text('تصویر زنده پس از اتصال سرویس پخش فعال می‌شود', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(20)),
+                        child: const Text('LIVE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.visibility, color: Colors.white, size: 16),
+                            SizedBox(width: 5),
+                            Text('۰ آنلاین', style: TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  tooltip: 'لایک',
+                  onPressed: () => setState(() => likes++),
+                  icon: const Icon(Icons.favorite, color: Colors.pinkAccent, size: 30),
+                ),
+                Text('$likes', style: const TextStyle(color: Colors.white)),
+                IconButton(
+                  tooltip: 'درخواست مشارکت در لایو',
+                  onPressed: () {
+                    setState(() => participationRequested = true);
+                    showServerNotice('درخواست مشارکت در لایو');
+                  },
+                  icon: Icon(
+                    participationRequested ? Icons.hourglass_top : Icons.video_call,
+                    color: Colors.white,
+                    size: 29,
+                  ),
+                ),
+                const Text('درخواست مشارکت', style: TextStyle(color: Colors.white70, fontSize: 12)),
+              ],
+            ),
+            Expanded(
+              flex: 3,
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF24202B),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('گفت‌وگوی بینندگان', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    Expanded(
+                      child: comments.isEmpty
+                          ? const Center(child: Text('هنوز کامنتی ثبت نشده است', style: TextStyle(color: Colors.white54)))
+                          : ListView(
+                              children: comments.map((comment) => Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                child: Text(comment, style: const TextStyle(color: Colors.white70)),
+                              )).toList(),
+                            ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: commentController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'کامنت بنویسید...',
+                              hintStyle: TextStyle(color: Colors.white54),
+                              isDense: true,
+                            ),
+                            onSubmitted: (_) => sendComment(),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: sendComment,
+                          icon: const Icon(Icons.send, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
+              child: ExpansionTile(
+                collapsedTextColor: Colors.white,
+                textColor: Colors.white,
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                title: const Text('ابزار منتشرکننده: مدیریت مشارکت‌کنندگان'),
+                children: [
+                  ListTile(
+                    textColor: Colors.white,
+                    leading: const Icon(Icons.person_add_alt_1, color: Colors.white),
+                    title: const Text('افزودن اختیاری هر بیننده به لایو'),
+                    onTap: addViewer,
+                  ),
+                  if (invitedViewers.isNotEmpty)
+                    ...invitedViewers.map((name) => ListTile(
+                      dense: true,
+                      textColor: Colors.white70,
+                      leading: const Icon(Icons.person, color: Colors.white70),
+                      title: Text('@$name'),
+                      trailing: IconButton(
+                        tooltip: 'حذف از فهرست',
+                        onPressed: () => setState(() => invitedViewers.remove(name)),
+                        icon: const Icon(Icons.close, color: Colors.white70),
+                      ),
+                    )),
+                  ListTile(
+                    textColor: Colors.white,
+                    leading: const Icon(Icons.check_circle_outline, color: Colors.white),
+                    title: const Text('بررسی و پذیرش درخواست‌های مشارکت'),
+                    onTap: () => showServerNotice('درخواست‌های مشارکت'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ---------------- STORY CREATE ----------------
 
 class StoryCreatePage extends StatefulWidget {
@@ -4569,20 +4846,7 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const IranaFeaturePage(
-                                  feature: IranaFeatureInfo(
-                                    title: 'پخش زنده',
-                                    subtitle: 'ارتباط زنده با دنبال‌کنندگان',
-                                    description: 'ایجاد پخش زنده، نمایش بینندگان، گفت‌وگوی زنده و مدیریت پخش.',
-                                    icon: Icons.live_tv_rounded,
-                                    items: [
-                                      'عنوان و تصویر پخش',
-                                      'شروع و پایان پخش زنده',
-                                      'نظرات و واکنش‌های زنده',
-                                      'مدیریت و مسدودسازی کاربران',
-                                    ],
-                                  ),
-                                ),
+                                builder: (_) => const IranaLivePage(),
                               ),
                             ),
                           ),
