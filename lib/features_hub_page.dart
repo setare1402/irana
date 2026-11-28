@@ -98,7 +98,7 @@ class IranaFeaturesHubPage extends StatelessWidget {
                 children: [
                   Text('امکانات جدید ایرانا', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                   SizedBox(height: 7),
-                  Text('هفت قابلیت جدید در یک بخش؛ آماده‌سازی اولیه اکنون و اتصال سرور در مرحله پایانی.', style: TextStyle(color: Colors.white, height: 1.5)),
+                  Text('شش قابلیت در این بخش؛ پخش زنده از منوی ساخت استوری در دسترس است. اتصال سرور در مرحله پایانی انجام می‌شود.', style: TextStyle(color: Colors.white, height: 1.5)),
                 ],
               ),
             ),
