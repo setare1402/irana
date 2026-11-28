@@ -3278,6 +3278,37 @@ class _ProfilePageState extends State<ProfilePage> {
               ],
             ),
           ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const IranaThemeShopPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.palette_outlined, size: 22),
+                label: const Text(
+                  'تغییر ظاهر برنامه',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF5A078D),
+                  backgroundColor: const Color(0xFFF5ECFC),
+                  side: const BorderSide(color: Color(0xFFD8B8EC), width: 1.3),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 18),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
