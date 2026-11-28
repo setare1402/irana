@@ -241,7 +241,7 @@ ThemeData iranaThemeData(String name) {
         borderRadius: BorderRadius.circular(radius),
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: palette.surface,
       surfaceTintColor: Colors.transparent,
       elevation: name == 'شب پرستاره' ? 0 : 2,
@@ -265,7 +265,7 @@ ThemeData iranaThemeData(String name) {
         borderSide: BorderSide(color: palette.primary, width: 2),
       ),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: palette.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
