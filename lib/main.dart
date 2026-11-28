@@ -151,10 +151,30 @@ ThemeData iranaThemeData(String name) {
     brightness: palette.brightness,
     surface: palette.surface,
   );
+
+  // Each theme changes the actual component geometry as well as its colors.
+  final radius = switch (name) {
+    'شکوفه صورتی' => 26.0,
+    'باغ گل‌ها' => 20.0,
+    'غروب بنفش' => 12.0,
+    'دریای آرام' => 30.0,
+    'شب پرستاره' => 8.0,
+    'جاده و طبیعت' => 16.0,
+    _ => 18.0,
+  };
+  final buttonShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(radius),
+  );
+  final cardShape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(radius + 2),
+    side: BorderSide(color: palette.primary.withOpacity(0.16)),
+  );
+
   return ThemeData(
     useMaterial3: true,
     brightness: palette.brightness,
     scaffoldBackgroundColor: palette.background,
+    canvasColor: palette.background,
     colorScheme: scheme,
     primaryColor: palette.primary,
     fontFamily: 'Roboto',
@@ -162,33 +182,116 @@ ThemeData iranaThemeData(String name) {
       backgroundColor: palette.surface,
       foregroundColor: scheme.onSurface,
       elevation: 0,
+      surfaceTintColor: Colors.transparent,
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: palette.surface,
       selectedItemColor: palette.primary,
       unselectedItemColor: scheme.onSurfaceVariant,
+      type: BottomNavigationBarType.fixed,
+      elevation: 5,
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: palette.surface,
+      indicatorColor: palette.primary.withOpacity(0.14),
+      iconTheme: MaterialStateProperty.resolveWith((states) =>
+          IconThemeData(color: states.contains(MaterialState.selected)
+              ? palette.primary : scheme.onSurfaceVariant)),
+      labelTextStyle: MaterialStateProperty.all(
+        TextStyle(color: scheme.onSurface, fontWeight: FontWeight.w600),
+      ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: palette.primary,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        foregroundColor: palette.brightness == Brightness.dark
+            ? scheme.onPrimary : Colors.white,
+        shape: buttonShape,
+        elevation: name == 'شب پرستاره' ? 0 : 2,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: palette.primary,
-        side: BorderSide(color: palette.primary.withOpacity(0.55)),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        side: BorderSide(color: palette.primary.withOpacity(0.7), width: 1.5),
+        shape: buttonShape,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: palette.primary,
+        shape: buttonShape,
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        foregroundColor: palette.primary,
+        shape: buttonShape,
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: palette.primary,
-      foregroundColor: Colors.white,
+      foregroundColor: scheme.onPrimary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    ),
+    cardTheme: CardTheme(
+      color: palette.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: name == 'شب پرستاره' ? 0 : 2,
+      shape: cardShape,
+      margin: const EdgeInsets.all(6),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: palette.surface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radius),
+        borderSide: BorderSide(color: palette.primary.withOpacity(0.35)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radius),
+        borderSide: BorderSide(color: palette.primary.withOpacity(0.28)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radius),
+        borderSide: BorderSide(color: palette.primary, width: 2),
+      ),
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: palette.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius + 4),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: palette.surface,
+      selectedColor: palette.primary.withOpacity(0.18),
+      side: BorderSide(color: palette.primary.withOpacity(0.3)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      labelStyle: TextStyle(color: scheme.onSurface),
+    ),
+    dividerTheme: DividerThemeData(
+      color: palette.primary.withOpacity(0.18),
+      thickness: 1,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: scheme.inverseSurface,
+      contentTextStyle: TextStyle(color: scheme.onInverseSurface),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radius),
+      ),
     ),
   );
 }
