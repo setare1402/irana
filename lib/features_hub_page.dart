@@ -1,3 +1,4 @@
+import 'chat_page.dart';
 import 'package:flutter/material.dart';
 
 const Color _iranaPurple = Color(0xFF7B3FB3);
@@ -119,7 +120,11 @@ class IranaFeaturesHubPage extends StatelessWidget {
                   feature: feature,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => IranaFeaturePage(feature: feature)),
+                    MaterialPageRoute(
+                      builder: (_) => feature.title == 'چت گروهی'
+                          ? const IranaChatPage(isGroup: true, groupName: 'گروه دوستان')
+                          : IranaFeaturePage(feature: feature),
+                    ),
                   ),
                 );
               },
