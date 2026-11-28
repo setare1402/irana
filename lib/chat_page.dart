@@ -98,9 +98,10 @@ class _IranaChatPageState extends State<IranaChatPage> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
     final now = DateTime.now();
-    final expiry = _defaultExpiryHours > 0
+    final expiry = _pendingCustomExpiry ?? (_defaultExpiryHours > 0
         ? now.add(Duration(hours: _defaultExpiryHours)).millisecondsSinceEpoch
-        : null;
+        : null);
+    _pendingCustomExpiry = null;
     setState(() {
       _messages.add({
         'id': '${now.microsecondsSinceEpoch}_${_messages.length}',
