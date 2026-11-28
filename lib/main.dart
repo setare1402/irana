@@ -4273,37 +4273,63 @@ class _StoryCreatePageState extends State<StoryCreatePage> {
                       ),
                       const SizedBox(height: 12),
                     ],
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        actionItem(
-                          icon: Icons.camera_alt_outlined,
-                          title: 'دوربین',
-                          onTap: takePhoto,
-                        ),
-                        actionItem(
-                          icon: Icons.photo_library_outlined,
-                          title: 'گالری',
-                          onTap: chooseGallery,
-                        ),
-                        actionItem(
-                          icon: Icons.music_note,
-                          title: 'موسیقی',
-                          onTap: () => showComingSoon('موسیقی'),
-                          color: iranaPink,
-                        ),
-                        actionItem(
-                          icon: Icons.grid_view_rounded,
-                          title: 'کلاژ',
-                          onTap: () => showComingSoon('کلاژ'),
-                        ),
-                        actionItem(
-                          icon: Icons.dashboard_outlined,
-                          title: 'قالب‌ها',
-                          onTap: () => showComingSoon('قالب‌ها'),
-                          color: iranaGold,
-                        ),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          actionItem(
+                            icon: Icons.live_tv_rounded,
+                            title: 'پخش زنده',
+                            color: Colors.redAccent,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const IranaFeaturePage(
+                                  feature: IranaFeatureInfo(
+                                    title: 'پخش زنده',
+                                    subtitle: 'ارتباط زنده با دنبال‌کنندگان',
+                                    description: 'ایجاد پخش زنده، نمایش بینندگان، گفت‌وگوی زنده و مدیریت پخش.',
+                                    icon: Icons.live_tv_rounded,
+                                    items: [
+                                      'عنوان و تصویر پخش',
+                                      'شروع و پایان پخش زنده',
+                                      'نظرات و واکنش‌های زنده',
+                                      'مدیریت و مسدودسازی کاربران',
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          actionItem(
+                            icon: Icons.camera_alt_outlined,
+                            title: 'دوربین',
+                            onTap: takePhoto,
+                          ),
+                          actionItem(
+                            icon: Icons.photo_library_outlined,
+                            title: 'گالری',
+                            onTap: chooseGallery,
+                          ),
+                          actionItem(
+                            icon: Icons.music_note,
+                            title: 'موسیقی',
+                            onTap: () => showComingSoon('موسیقی'),
+                            color: iranaPink,
+                          ),
+                          actionItem(
+                            icon: Icons.grid_view_rounded,
+                            title: 'کلاژ',
+                            onTap: () => showComingSoon('کلاژ'),
+                          ),
+                          actionItem(
+                            icon: Icons.dashboard_outlined,
+                            title: 'قالب‌ها',
+                            onTap: () => showComingSoon('قالب‌ها'),
+                            color: iranaGold,
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 10),
                     if (selectedFile == null)
