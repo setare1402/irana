@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'notifications_page.dart';
+import 'features_hub_page.dart';
 
 final ValueNotifier<Locale> iranaLocale = ValueNotifier(const Locale('fa'));
 
@@ -1230,6 +1231,21 @@ class _IranaHomeState extends State<IranaHome> {
                   ),
                 ),
                 actions: [
+                  IconButton(
+                    tooltip: 'امکانات IRANA',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const IranaFeaturesHubPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.grid_view_rounded,
+                      color: Color(0xFF7B3FB3),
+                    ),
+                  ),
                   IconButton(
                     onPressed: () {
                       Navigator.push(
