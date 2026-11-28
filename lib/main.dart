@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -173,7 +174,7 @@ ThemeData iranaThemeData(String name) {
   return ThemeData(
     useMaterial3: true,
     brightness: palette.brightness,
-    scaffoldBackgroundColor: palette.background,
+    scaffoldBackgroundColor: name == 'شب پرستاره' ? Colors.transparent : palette.background,
     canvasColor: palette.background,
     colorScheme: scheme,
     primaryColor: palette.primary,
@@ -327,6 +328,18 @@ class IranaApp extends StatelessWidget {
               localeResolutionCallback: (deviceLocale, supportedLocales) =>
                   const Locale('en'),
               theme: iranaThemeData(themeName),
+              builder: (context, child) {
+                if (themeName != 'شب پرستاره') {
+                  return child ?? const SizedBox.shrink();
+                }
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const CustomPaint(painter: IranaStarryBackgroundPainter()),
+                    child ?? const SizedBox.shrink(),
+                  ],
+                );
+              },
               home: Directionality(
                 textDirection: directionForLanguage(locale.languageCode),
                 child: const IranaHome(),
@@ -337,6 +350,73 @@ class IranaApp extends StatelessWidget {
       },
     );
   }
+}
+
+class IranaStarryBackgroundPainter extends CustomPainter {
+  const IranaStarryBackgroundPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final background = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF080D24), Color(0xFF151A3B), Color(0xFF090F22)],
+      ).createShader(rect);
+    canvas.drawRect(rect, background);
+
+    final glow = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF6250A8).withOpacity(0.30),
+          const Color(0xFF6250A8).withOpacity(0.0),
+        ],
+      ).createShader(Rect.fromCircle(
+        center: Offset(size.width * 0.78, size.height * 0.16),
+        radius: size.width * 0.58,
+      ));
+    canvas.drawRect(rect, glow);
+
+    final stars = <Offset>[
+      const Offset(.08,.08), const Offset(.22,.15), const Offset(.39,.07),
+      const Offset(.57,.19), const Offset(.73,.08), const Offset(.91,.22),
+      const Offset(.14,.34), const Offset(.31,.28), const Offset(.49,.39),
+      const Offset(.67,.32), const Offset(.86,.43), const Offset(.06,.57),
+      const Offset(.25,.51), const Offset(.44,.62), const Offset(.62,.54),
+      const Offset(.81,.65), const Offset(.95,.76), const Offset(.13,.82),
+      const Offset(.35,.76), const Offset(.55,.88), const Offset(.75,.84),
+      const Offset(.91,.94), const Offset(.04,.95), const Offset(.48,.12),
+    ];
+    final starPaint = Paint()..color = const Color(0xFFE8E6FF);
+    for (var i = 0; i < stars.length; i++) {
+      final p = Offset(stars[i].dx * size.width, stars[i].dy * size.height);
+      final radius = i % 5 == 0 ? 1.8 : (i % 3 == 0 ? 1.25 : 0.8);
+      canvas.drawCircle(p, radius, starPaint);
+      if (i % 5 == 0) {
+        final ray = Paint()
+          ..color = const Color(0x99D8D0FF)
+          ..strokeWidth = 0.7;
+        canvas.drawLine(p.translate(-4, 0), p.translate(4, 0), ray);
+        canvas.drawLine(p.translate(0, -4), p.translate(0, 4), ray);
+      }
+    }
+
+    final moonCenter = Offset(size.width * .82, size.height * .12);
+    canvas.drawCircle(
+      moonCenter,
+      23,
+      Paint()..color = const Color(0xFFFFE8A6),
+    );
+    canvas.drawCircle(
+      moonCenter.translate(10, -8),
+      22,
+      Paint()..color = const Color(0xFF151A3B),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ---------------- MODELS ----------------
