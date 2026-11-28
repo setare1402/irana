@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'notifications_page.dart';
 import 'features_hub_page.dart';
+import 'chat_page.dart';
 
 final ValueNotifier<Locale> iranaLocale = ValueNotifier(const Locale('fa'));
 
@@ -1845,19 +1846,9 @@ class _DirectMessagesPageState extends State<DirectMessagesPage> {
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const IranaFeaturePage(
-                    feature: IranaFeatureInfo(
-                      title: 'چت گروهی',
-                      subtitle: 'گفت‌وگو در گروه‌ها',
-                      description: 'ساخت گروه، مدیریت اعضا و گفت‌وگوی گروهی؛ اتصال و پیام‌رسانی واقعی پس از راه‌اندازی سرور فعال می‌شود.',
-                      icon: Icons.groups_rounded,
-                      items: [
-                        'ساخت گروه جدید',
-                        'مدیریت اعضا و مدیران',
-                        'پیام متنی و رسانه',
-                        'تنظیمات و حریم خصوصی گروه',
-                      ],
-                    ),
+                  builder: (_) => const IranaChatPage(
+                    isGroup: true,
+                    groupName: 'گروه دوستان',
                   ),
                 ),
               ),
@@ -2011,125 +2002,9 @@ class IranaPrivateChatPage extends StatelessWidget {
 
   const IranaPrivateChatPage({super.key, required this.username});
 
-  void _showServerNotice(BuildContext context, String feature) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(feature),
-        content: const Text(
-          'ظاهر این قابلیت آماده شده است؛ برقراری تماس و ارسال پیام واقعی پس از اتصال سرور فعال می‌شود.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('متوجه شدم'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: iranaBg,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          foregroundColor: iranaPurple,
-          elevation: 0,
-          title: Row(
-            children: [
-              const CircleAvatar(
-                backgroundColor: Color(0xFFEDE2F7),
-                child: Icon(Icons.person, color: iranaPurple),
-              ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  '@$username',
-                  style: const TextStyle(
-                    color: iranaPurple,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              tooltip: 'تماس صوتی',
-              onPressed: () => _showServerNotice(context, 'تماس صوتی'),
-              icon: const Icon(Icons.call_rounded),
-            ),
-            IconButton(
-              tooltip: 'تماس تصویری',
-              onPressed: () => _showServerNotice(context, 'تماس تصویری'),
-              icon: const Icon(Icons.videocam_rounded),
-            ),
-            IconButton(
-              tooltip: 'تماس تصویری گروهی (حداکثر ۵ نفر)',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const IranaGroupVideoCallPage(),
-                ),
-              ),
-              icon: const Icon(Icons.groups_rounded),
-            ),
-            const SizedBox(width: 4),
-          ],
-        ),
-        body: Column(
-          children: [
-            const Expanded(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(
-                    'گفت‌وگوی خصوصی با این کاربر\n\nپس از اتصال سرور، پیام‌ها و تاریخچه گفتگو در این صفحه نمایش داده می‌شوند.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black54, height: 1.8),
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(12, 9, 12, 14),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: TextField(
-                      enabled: false,
-                      decoration: InputDecoration(
-                        hintText: 'پیام بنویسید...',
-                        filled: true,
-                        fillColor: Color(0xFFF5F1F8),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(22)),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    tooltip: 'ارسال پیام پس از اتصال سرور',
-                    onPressed: () => _showServerNotice(context, 'ارسال پیام'),
-                    icon: const Icon(Icons.send_rounded, color: iranaPurple),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return IranaChatPage(username: username);
   }
 }
 
