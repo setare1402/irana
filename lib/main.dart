@@ -1651,6 +1651,16 @@ class IranaPrivateChatPage extends StatelessWidget {
               onPressed: () => _showServerNotice(context, 'تماس تصویری'),
               icon: const Icon(Icons.videocam_rounded),
             ),
+            IconButton(
+              tooltip: 'تماس تصویری گروهی (حداکثر ۵ نفر)',
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const IranaGroupVideoCallPage(),
+                ),
+              ),
+              icon: const Icon(Icons.groups_rounded),
+            ),
             const SizedBox(width: 4),
           ],
         ),
@@ -1693,6 +1703,123 @@ class IranaPrivateChatPage extends StatelessWidget {
                     tooltip: 'ارسال پیام پس از اتصال سرور',
                     onPressed: () => _showServerNotice(context, 'ارسال پیام'),
                     icon: const Icon(Icons.send_rounded, color: iranaPurple),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------- GROUP VIDEO CALL ----------------
+
+class IranaGroupVideoCallPage extends StatelessWidget {
+  const IranaGroupVideoCallPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final participants = List.generate(5, (index) => index + 1);
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF17131D),
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF24202B),
+          foregroundColor: Colors.white,
+          title: const Text('مکالمه تصویری گروهی'),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Center(
+                child: Text(
+                  '۰ از ۵',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(18),
+              child: Text(
+                'امکان حضور حداکثر ۵ نفر به‌صورت همزمان در تماس تصویری گروهی',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, height: 1.7),
+              ),
+            ),
+            Expanded(
+              child: GridView.count(
+                padding: const EdgeInsets.all(12),
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                children: participants.map((number) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF332B3D),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircleAvatar(
+                          radius: 34,
+                          backgroundColor: Color(0xFF59436F),
+                          child: Icon(Icons.person, color: Colors.white, size: 38),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'جایگاه نفر $number',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 24),
+              child: Column(
+                children: [
+                  const Text(
+                    'این صفحه نمایشی است؛ تماس گروهی واقعی پس از اتصال سرور و سرویس تماس فعال می‌شود.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white54, fontSize: 12, height: 1.6),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => showDialog<void>(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          title: const Text('تماس تصویری گروهی'),
+                          content: const Text(
+                            'حداکثر ۵ نفر همزمان پشتیبانی می‌شوند. دعوت و برقراری تماس واقعی در مرحله اتصال سرور فعال خواهد شد.',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              child: const Text('متوجه شدم'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      icon: const Icon(Icons.person_add_alt_1),
+                      label: const Text('دعوت از افراد (پس از اتصال سرور)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: iranaPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(14),
+                      ),
+                    ),
                   ),
                 ],
               ),
